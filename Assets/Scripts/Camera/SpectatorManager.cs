@@ -1,3 +1,4 @@
+using Unity.InferenceEngine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -38,14 +39,9 @@ public class SpectatorManager : MonoBehaviour
         isFreeCam = true;
         mainCamera.transform.SetParent(null);
         freeCam.enabled = true;
-        freeCam.SetPosition(new Vector3(0, 10, 0), Quaternion.identity);
+        freeCam.SetPosition(new Vector3(0, 10, 0), Quaternion.Euler(75, 0, 0));
 
-
-        PlayerController playerController = botHeads[currentBotIndex].GetComponentInParent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.enabled = false;
-        }
+        DisactiveBot(botHeads[currentBotIndex]);
 
     }
 
@@ -60,10 +56,13 @@ public class SpectatorManager : MonoBehaviour
         }
         else
         {
+            DisactiveBot(botHeads[currentBotIndex]);
             currentBotIndex = (currentBotIndex + 1) % botHeads.Length;
         }
 
         AttachCameraToBot(currentBotIndex);
+        ActiveBot(botHeads[currentBotIndex]);
+
     }
 
     private void PrevBot()
@@ -77,10 +76,13 @@ public class SpectatorManager : MonoBehaviour
         }
         else
         {
+            DisactiveBot(botHeads[currentBotIndex]);
             currentBotIndex = (currentBotIndex - 1 + botHeads.Length) % botHeads.Length;
         }
 
         AttachCameraToBot(currentBotIndex);
+        PerspectiveController newPerspectiveController = botHeads[currentBotIndex].GetComponentInParent<PerspectiveController>();
+        ActiveBot(botHeads[currentBotIndex]);
     }
 
     private void AttachCameraToBot(int index)
@@ -98,6 +100,41 @@ public class SpectatorManager : MonoBehaviour
             playerController.enabled = true;
         }
 
-        Debug.Log($"Obserwowanie bota: {targetHead.parent.name}");
+    }
+    private void OnDisable()
+    {
+        freeCamToggleAction.action.Disable();
+        nextBotAction.action.Disable();
+        prevBotAction.action.Disable();
+
+        freeCamToggleAction.action.performed -= _ => EnableFreeCam();
+        nextBotAction.action.performed -= _ => NextBot();
+        prevBotAction.action.performed -= _ => PrevBot();
+    }
+    private void DisactiveBot(Transform botHead)
+    {
+        PlayerController playerController = botHead.GetComponentInParent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+        }
+        PerspectiveController perspectiveController = botHead.GetComponentInParent<PerspectiveController>();
+        if (perspectiveController != null)
+        {
+            perspectiveController.SetDefaultView();
+        }
+    }
+    private void ActiveBot(Transform botHead)
+    {
+        PlayerController playerController = botHead.GetComponentInParent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.enabled = true;
+        }
+        PerspectiveController perspectiveController = botHead.GetComponentInParent<PerspectiveController>();
+        if (perspectiveController != null)
+        {
+            perspectiveController.SetHideView();
+        }
     }
 }
