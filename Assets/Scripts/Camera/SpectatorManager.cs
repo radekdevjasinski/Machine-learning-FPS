@@ -1,4 +1,4 @@
-using Unity.InferenceEngine;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,14 +7,15 @@ public class SpectatorManager : MonoBehaviour
     [Header("Components")]
     public Camera mainCamera;
     public FreeCam freeCam;
-    public Transform[] botHeads;
+
+    public List<Transform> targetsHeads = new List<Transform>();
 
     [Header("Input Actions")]
     public InputActionReference freeCamToggleAction;
     public InputActionReference nextBotAction;
     public InputActionReference prevBotAction;
 
-    private int currentBotIndex = -1;
+    private int currentTargetIndex = -1;
     private bool isFreeCam = true;
 
     void OnEnable()
@@ -24,14 +25,69 @@ public class SpectatorManager : MonoBehaviour
         prevBotAction.action.Enable();
 
         freeCamToggleAction.action.performed += _ => EnableFreeCam();
-        nextBotAction.action.performed += _ => NextBot();
-        prevBotAction.action.performed += _ => PrevBot();
+        nextBotAction.action.performed += _ => NextTarget();
+        prevBotAction.action.performed += _ => PrevTarget();
+        PerspectiveController.OnCharacterAppear += AddTarget;
+        PerspectiveController.OnCharacterDisappear += RemoveTarget;
+    }
+
+    private void OnDisable()
+    {
+        freeCamToggleAction.action.Disable();
+        nextBotAction.action.Disable();
+        prevBotAction.action.Disable();
+
+        freeCamToggleAction.action.performed -= _ => EnableFreeCam();
+        nextBotAction.action.performed -= _ => NextTarget();
+        prevBotAction.action.performed -= _ => PrevTarget();
+        PerspectiveController.OnCharacterAppear -= AddTarget;
+        PerspectiveController.OnCharacterDisappear -= RemoveTarget;
+    }
+
+    void AddTarget(Transform head)
+    {
+        if (!targetsHeads.Contains(head))
+        {
+            targetsHeads.Add(head);
+        }
+    }
+
+    void RemoveTarget(Transform head)
+    {
+        int removedIndex = targetsHeads.IndexOf(head);
+
+        if (removedIndex == -1) return;
+
+        if (!isFreeCam && currentTargetIndex == removedIndex)
+        {
+            currentTargetIndex = -1;
+            EnableFreeCam();
+        }
+
+        targetsHeads.RemoveAt(removedIndex);
+
+        if (removedIndex < currentTargetIndex)
+        {
+            currentTargetIndex--;
+        }
+
+        if (currentTargetIndex >= targetsHeads.Count)
+        {
+            currentTargetIndex = targetsHeads.Count - 1;
+        }
     }
 
     void Start()
     {
-        //EnableFreeCam();
-        NextBot();
+        EnableFreeCam();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        PerspectiveController[] existingTargets = FindObjectsByType<PerspectiveController>();
+        foreach (var target in existingTargets)
+        {
+            AddTarget(target?.GetHead());
+        }
     }
 
     private void EnableFreeCam()
@@ -41,100 +97,60 @@ public class SpectatorManager : MonoBehaviour
         freeCam.enabled = true;
         freeCam.SetPosition(new Vector3(0, 10, 0), Quaternion.Euler(75, 0, 0));
 
-        DisactiveBot(botHeads[currentBotIndex]);
-
+        if (currentTargetIndex >= 0 && currentTargetIndex < targetsHeads.Count)
+        {
+            DeactivateTarget(targetsHeads[currentTargetIndex]);
+        }
     }
 
-    private void NextBot()
+    private void NextTarget()
     {
-        if (botHeads.Length == 0) return;
+        if (targetsHeads.Count == 0) return;
 
-        if (isFreeCam)
-        {
-            currentBotIndex = 0;
-            isFreeCam = false;
-        }
-        else
-        {
-            DisactiveBot(botHeads[currentBotIndex]);
-            currentBotIndex = (currentBotIndex + 1) % botHeads.Length;
-        }
+        if (!isFreeCam) DeactivateTarget(targetsHeads[currentTargetIndex]);
 
-        AttachCameraToBot(currentBotIndex);
-        ActiveBot(botHeads[currentBotIndex]);
+        isFreeCam = false;
 
+        currentTargetIndex = (currentTargetIndex + 1) % targetsHeads.Count;
+
+        ActivateTarget(targetsHeads[currentTargetIndex]);
     }
 
-    private void PrevBot()
+    private void PrevTarget()
     {
-        if (botHeads.Length == 0) return;
+        if (targetsHeads.Count == 0) return;
 
-        if (isFreeCam)
-        {
-            currentBotIndex = botHeads.Length - 1;
-            isFreeCam = false;
-        }
-        else
-        {
-            DisactiveBot(botHeads[currentBotIndex]);
-            currentBotIndex = (currentBotIndex - 1 + botHeads.Length) % botHeads.Length;
-        }
+        if (!isFreeCam) DeactivateTarget(targetsHeads[currentTargetIndex]);
 
-        AttachCameraToBot(currentBotIndex);
-        PerspectiveController newPerspectiveController = botHeads[currentBotIndex].GetComponentInParent<PerspectiveController>();
-        ActiveBot(botHeads[currentBotIndex]);
+        isFreeCam = false;
+        currentTargetIndex = (currentTargetIndex - 1 + targetsHeads.Count) % targetsHeads.Count;
+
+        ActivateTarget(targetsHeads[currentTargetIndex]);
     }
 
-    private void AttachCameraToBot(int index)
+    private void ActivateTarget(Transform head)
     {
         freeCam.enabled = false;
 
-        Transform targetHead = botHeads[index];
-        mainCamera.transform.SetParent(targetHead);
+        mainCamera.transform.SetParent(head);
         mainCamera.transform.localPosition = Vector3.zero;
         mainCamera.transform.localRotation = Quaternion.identity;
 
-        PlayerController playerController = targetHead.GetComponentInParent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.enabled = true;
-        }
+        PerspectiveController perspective = head.GetComponentInParent<PerspectiveController>();
+        if (perspective != null) perspective.SetHideView();
 
+        PlayerController player = head.GetComponentInParent<PlayerController>();
+        if (player != null) player.enabled = true;
     }
-    private void OnDisable()
-    {
-        freeCamToggleAction.action.Disable();
-        nextBotAction.action.Disable();
-        prevBotAction.action.Disable();
 
-        freeCamToggleAction.action.performed -= _ => EnableFreeCam();
-        nextBotAction.action.performed -= _ => NextBot();
-        prevBotAction.action.performed -= _ => PrevBot();
-    }
-    private void DisactiveBot(Transform botHead)
+    private void DeactivateTarget(Transform head)
     {
-        PlayerController playerController = botHead.GetComponentInParent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.enabled = false;
-        }
-        PerspectiveController perspectiveController = botHead.GetComponentInParent<PerspectiveController>();
-        if (perspectiveController != null)
-        {
-            perspectiveController.SetDefaultView();
-        }
-    }
-    private void ActiveBot(Transform botHead)
-    {
-        PlayerController playerController = botHead.GetComponentInParent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.enabled = true;
-        }
-        PerspectiveController perspectiveController = botHead.GetComponentInParent<PerspectiveController>();
-        if (perspectiveController != null)
-        {
-            perspectiveController.SetHideView();
-        }
+        if (head == null) return;
+
+        PerspectiveController perspective = head.GetComponentInParent<PerspectiveController>();
+        if (perspective != null) perspective.SetDefaultView();
+
+        PlayerController player = head.GetComponentInParent<PlayerController>();
+        if (player != null) player.enabled = false;
     }
 }

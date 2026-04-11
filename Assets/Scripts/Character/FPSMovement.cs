@@ -4,76 +4,111 @@ using UnityEngine;
 public class FPSMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
-    public float moveSpeed = 5f;
-    public float jumpHeight = 1.5f;
-    public float jumpCooldown = 1f;
-    public float gravity = -9.81f;
+    [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _jumpHeight = 1.5f;
+    [SerializeField] private float _jumpCooldown = 1f;
+    static readonly float GRAVITY = -9.81f;
+
+    [Header("Crouch Settings")]
+    [SerializeField] private float _crouchHeight = 1f;
+    [SerializeField] private float _crouchSpeedMultiplier = 0.5f;
+    [SerializeField] private float _crouchTransitionSpeed = 10f;
+    [SerializeField] private float _crouchHeadY = 0.3f;
 
     [Header("Look Settings")]
-    public Transform cameraTransform;
-    public float lookSpeed = 2f;
-    public float maxLookAngle = 85f;
+    [SerializeField] private float _lookSpeed = .1f;
+    [SerializeField] private float _maxLookAngle = 60f;
+    [SerializeField] private Transform _headTransform;
 
-    private CharacterController controller;
-    private Vector3 velocity;
-    private float xRotation = 0f;
+    private CharacterController _controller;
+    private Vector3 _velocity;
+    private float _xRotation = 0f;
 
-    private Vector2 currentMoveInput;
-    private Vector2 currentLookInput;
-    private bool currentJumpInput;
-    private float nextJumpTime = 0f;
+    private float _standingHeight;
+    private float _standingCenterY;
+    private float _standingHeadY;
+
+    private Vector2 _currentMoveInput;
+    private Vector2 _currentLookInput;
+    private bool _currentJumpInput;
+    private bool _currentCrouchInput;
+
+    private float _nextJumpTime = 0f;
 
     void Start()
     {
-        controller = GetComponent<CharacterController>();
+        _controller = GetComponent<CharacterController>();
+
+        _standingHeight = _controller.height;
+        _standingCenterY = _controller.center.y;
+        if (_headTransform != null)
+        {
+            _standingHeadY = _headTransform.localPosition.y;
+        }
     }
 
-    public void SetInput(Vector2 moveInput, Vector2 lookInput, bool jumpInput)
+    public void SetInput(Vector2 moveInput, Vector2 lookInput, bool jumpInput, bool crouchInput)
     {
-        this.currentMoveInput = moveInput;
-        this.currentLookInput = lookInput;
-        this.currentJumpInput = jumpInput;
+        this._currentMoveInput = moveInput;
+        this._currentLookInput = lookInput;
+        this._currentJumpInput = jumpInput;
+        this._currentCrouchInput = crouchInput;
     }
 
     void Update()
     {
-        // rozgladanie się
-        transform.Rotate(Vector3.up * currentLookInput.x * lookSpeed);
+        // --- 1. ROZGLĄDANIE SIĘ ---
+        transform.Rotate(Vector3.up * _currentLookInput.x * _lookSpeed);
 
-        xRotation -= currentLookInput.y * lookSpeed;
-        xRotation = Mathf.Clamp(xRotation, -maxLookAngle, maxLookAngle);
-        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        _xRotation -= _currentLookInput.y * _lookSpeed;
+        _xRotation = Mathf.Clamp(_xRotation, -_maxLookAngle, _maxLookAngle);
+        _headTransform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
 
-        currentLookInput = Vector2.zero;
+        _currentLookInput = Vector2.zero;
 
-        // skakanie i grawitacja
-        if (controller.isGrounded && velocity.y < 0)
+        // --- 2. KUCANIE (Logika fizyczna) ---
+        float targetHeight = _currentCrouchInput ? _crouchHeight : _standingHeight;
+        float currentSpeed = _currentCrouchInput ? _moveSpeed * _crouchSpeedMultiplier : _moveSpeed;
+
+        _controller.height = Mathf.Lerp(_controller.height, targetHeight, Time.deltaTime * _crouchTransitionSpeed);
+
+        float heightDifference = _standingHeight - _controller.height;
+        _controller.center = new Vector3(0, _standingCenterY - (heightDifference / 2f), 0);
+
+        if (_headTransform != null)
         {
-            velocity.y = -2f;
+            float targetHeadY = _currentCrouchInput ? _crouchHeadY : _standingHeadY;
+            Vector3 headPos = _headTransform.localPosition;
+            headPos.y = Mathf.Lerp(headPos.y, targetHeadY, Time.deltaTime * _crouchTransitionSpeed);
+            _headTransform.localPosition = headPos;
         }
 
-        if (currentJumpInput && controller.isGrounded && Time.time >= nextJumpTime)
+        // --- 3. SKAKANIE I GRAWITACJA ---
+        if (_controller.isGrounded && _velocity.y < 0)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-
-            nextJumpTime = Time.time + jumpCooldown;
+            _velocity.y = -2f;
         }
 
-        currentJumpInput = false;
+        if (_currentJumpInput && _controller.isGrounded && !_currentCrouchInput && Time.time >= _nextJumpTime)
+        {
+            _velocity.y = Mathf.Sqrt(_jumpHeight * -2f * GRAVITY);
+            _nextJumpTime = Time.time + _jumpCooldown;
+        }
 
-        // poruszanie się
-        Vector3 moveDirection = transform.right * currentMoveInput.x + transform.forward * currentMoveInput.y;
+        _currentJumpInput = false;
+
+        // --- 4. PORUSZANIE SIĘ ---
+        Vector3 moveDirection = transform.right * _currentMoveInput.x + transform.forward * _currentMoveInput.y;
 
         if (moveDirection.magnitude > 1f)
         {
             moveDirection.Normalize();
         }
 
-        velocity.y += gravity * Time.deltaTime;
+        _velocity.y += GRAVITY * Time.deltaTime;
 
-        // wykonanie ruchu
-        Vector3 finalMovement = (moveDirection * moveSpeed) + velocity;
+        Vector3 finalMovement = (moveDirection * currentSpeed) + _velocity;
 
-        controller.Move(finalMovement * Time.deltaTime);
+        _controller.Move(finalMovement * Time.deltaTime);
     }
 }

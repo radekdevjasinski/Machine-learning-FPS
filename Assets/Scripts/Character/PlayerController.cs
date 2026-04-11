@@ -1,3 +1,5 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,32 +10,22 @@ public class PlayerController : MonoBehaviour
     public InputActionReference moveAction;
     public InputActionReference lookAction;
     public InputActionReference jumpAction;
+    public InputActionReference fireAction;
+    public InputActionReference crouchAction;
 
-    private FPSMovement movementBody;
+    [Header("References")]
+    private FPSMovement _movementBody;
+    [SerializeField] private LaserWeapon _laserWeapon;
 
     void Awake()
     {
-        movementBody = GetComponent<FPSMovement>();
-    }
-
-    void Start()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
-    void OnEnable()
-    {
-        if (moveAction != null) moveAction.action.Enable();
-        if (lookAction != null) lookAction.action.Enable();
-        if (jumpAction != null) jumpAction.action.Enable();
-    }
-
-    void OnDisable()
-    {
-        if (moveAction != null) moveAction.action.Disable();
-        if (lookAction != null) lookAction.action.Disable();
-        if (jumpAction != null) jumpAction.action.Disable();
+        _movementBody = GetComponent<FPSMovement>();
+        _laserWeapon = GetComponentInChildren<LaserWeapon>();
+        moveAction?.action.Enable();
+        lookAction?.action.Enable();
+        jumpAction?.action.Enable();
+        fireAction?.action.Enable();
+        crouchAction?.action.Enable();
     }
 
     void Update()
@@ -41,7 +33,12 @@ public class PlayerController : MonoBehaviour
         Vector2 moveInput = moveAction.action.ReadValue<Vector2>();
         Vector2 lookInput = lookAction.action.ReadValue<Vector2>();
         bool jump = jumpAction.action.IsPressed();
+        bool crouch = crouchAction.action.IsPressed();
 
-        movementBody.SetInput(moveInput, lookInput, jump);
+        _movementBody.SetInput(moveInput, lookInput, jump, crouch);
+        if (fireAction.action.triggered)
+        {
+            _laserWeapon.Shoot();
+        }
     }
 }

@@ -1,84 +1,76 @@
-using UnityEngine;
 using System.Collections;
-using UnityEngine.InputSystem;
+using UnityEngine;
 
 public class LaserWeapon : MonoBehaviour
 {
-    public Camera playerCamera;
-    public InputActionReference fireAction;
 
-    [Header("Blaster Settings")]
-    public float range = 100f;
-    public GameObject projectilePrefab;
-    public Transform firePoint;
-    public float projectileSpeed = 100f;
-    public float projectileLifetime = 3f;
+    [Header("Gameplay")]
+    [SerializeField] private float _damage = 1f;
+    [SerializeField] private float _range = 100f;
+    [SerializeField] private float _fireRate = 0.5f;
+    private float _lastFireTime;
 
-    void OnEnable()
+    [Header("Visuals")]
+    [SerializeField] private Transform _firePoint;
+    [SerializeField] private LineRenderer _lineRenderer;
+    [SerializeField] private float _laserDuration = 0.05f;
+
+    private void Awake()
     {
-        fireAction.action.Enable();
-    }
-
-    void OnDisable()
-    {
-        fireAction.action.Disable();
-    }
-
-    void Update()
-    {
-        if (fireAction.action.triggered)
+        if (_lineRenderer != null)
         {
-            ShootLaser();
+            _lineRenderer.enabled = false;
+        }
+        else
+        {
+            Debug.LogError("Brak przypisanego LineRenderera w skrypcie LaserWeapon!");
         }
     }
 
-    void ShootLaser()
+    public void Shoot()
     {
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        if (Time.time - _lastFireTime < _fireRate) return;
+
+        _lastFireTime = Time.time;
+        ShootLaser();
+    }
+
+    public void ShootLaser()
+    {
+        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
         RaycastHit hit;
         Vector3 endPoint;
 
-        if (Physics.Raycast(ray, out hit, range))
+        if (Physics.Raycast(ray, out hit, _range))
         {
             endPoint = hit.point;
             Debug.Log("Trafiono: " + hit.collider.name);
+
+            Health targetHealth = hit.collider.GetComponent<Health>();
+            if (targetHealth != null)
+            {
+                targetHealth.TakeDamage(_damage);
+            }
         }
         else
         {
-            endPoint = ray.GetPoint(range);
+            endPoint = ray.GetPoint(_range);
         }
 
-        FireBlaster(endPoint);
+        StartCoroutine(RenderLaserCoroutine(endPoint));
     }
 
-    public void FireBlaster(Vector3 targetPoint)
+    private IEnumerator RenderLaserCoroutine(Vector3 targetPoint)
     {
-        if (projectilePrefab == null || firePoint == null)
-        {
-            Debug.LogWarning("Brak przypisanego prefaba lub firePoint!");
-            return;
-        }
+        if (_lineRenderer == null || _firePoint == null) yield break;
 
-        GameObject projectile = Instantiate(projectilePrefab);
+        _lineRenderer.SetPosition(0, _firePoint.position);
+        _lineRenderer.SetPosition(1, targetPoint);
 
-        Vector3 direction = (targetPoint - firePoint.position).normalized;
+        _lineRenderer.enabled = true;
 
-        projectile.transform.up = direction;
+        yield return new WaitForSeconds(_laserDuration);
 
-        float offsetDistance = projectile.transform.localScale.y;
-
-        projectile.transform.position = firePoint.position + (direction * offsetDistance);
-
-        Rigidbody rb = projectile.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.linearVelocity = direction * projectileSpeed;
-        }
-        else
-        {
-            Debug.LogError("Prefab pocisku musi mieć komponent Rigidbody, aby móc się poruszać!");
-        }
-
-        Destroy(projectile, projectileLifetime);
+        _lineRenderer.enabled = false;
     }
 }
