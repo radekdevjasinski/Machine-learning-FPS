@@ -33,6 +33,12 @@ public class FPSMovement : MonoBehaviour
     private bool _currentJumpInput;
     private bool _currentCrouchInput;
 
+    public CharacterController Controller => _controller;
+    public float StandingHeight => _standingHeight;
+    public float MoveSpeed => _moveSpeed;
+    public float MaxLookAngle => _maxLookAngle;
+    public Transform HeadTransform => _headTransform;
+
     private float _nextJumpTime = 0f;
 
     void Start()
