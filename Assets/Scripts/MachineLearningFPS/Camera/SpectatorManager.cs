@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -22,6 +23,13 @@ namespace MachineLearningFPS.Camera
 
         private int currentTargetIndex = -1;
         private bool isFreeCam = true;
+
+        public static event Action<Transform> OnActiveTargetChanged;
+
+        private void NotifyActiveTargetChanged()
+        {
+            OnActiveTargetChanged?.Invoke(GetCurrentTarget());
+        }
 
         void OnEnable()
         {
@@ -106,6 +114,8 @@ namespace MachineLearningFPS.Camera
             {
                 DeactivateTarget(targetsHeads[currentTargetIndex]);
             }
+
+            NotifyActiveTargetChanged();
         }
 
         private void NextTarget()
@@ -119,6 +129,7 @@ namespace MachineLearningFPS.Camera
             currentTargetIndex = (currentTargetIndex + 1) % targetsHeads.Count;
 
             ActivateTarget(targetsHeads[currentTargetIndex]);
+            NotifyActiveTargetChanged();
         }
 
         private void PrevTarget()
@@ -131,6 +142,7 @@ namespace MachineLearningFPS.Camera
             currentTargetIndex = (currentTargetIndex - 1 + targetsHeads.Count) % targetsHeads.Count;
 
             ActivateTarget(targetsHeads[currentTargetIndex]);
+            NotifyActiveTargetChanged();
         }
 
         private void ActivateTarget(Transform head)
@@ -146,6 +158,12 @@ namespace MachineLearningFPS.Camera
 
             PlayerController player = head.GetComponentInParent<PlayerController>();
             if (player != null) player.enabled = true;
+
+            UnityEngine.Camera UICamera = head.GetComponentInChildren<UnityEngine.Camera>();
+            if (UICamera != null && UICamera != mainCamera)
+            {
+                UICamera.enabled = true;
+            }
         }
 
         private void DeactivateTarget(Transform head)
@@ -157,6 +175,20 @@ namespace MachineLearningFPS.Camera
 
             PlayerController player = head.GetComponentInParent<PlayerController>();
             if (player != null) player.enabled = false;
+
+            UnityEngine.Camera UICamera = head.GetComponentInChildren<UnityEngine.Camera>();
+            if (UICamera != null && UICamera != mainCamera)
+            {
+                UICamera.enabled = false;
+            }
+        }
+        public Transform GetCurrentTarget()
+        {
+            if (isFreeCam || currentTargetIndex < 0 || currentTargetIndex >= targetsHeads.Count)
+            {
+                return null;
+            }
+            return targetsHeads[currentTargetIndex];
         }
     }
 }

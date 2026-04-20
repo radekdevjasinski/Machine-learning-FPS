@@ -5,6 +5,7 @@ using Unity.MLAgents.Sensors;
 using UnityEngine.InputSystem;
 
 using MachineLearningFPS.WeaponSystem;
+using MachineLearningFPS.UI;
 
 namespace MachineLearningFPS.Character
 {
@@ -22,23 +23,18 @@ namespace MachineLearningFPS.Character
         public InputActionReference selectWeapon3;
 
 
-        private FPSMovement movementBody;
-        private WeaponController laserWeapon;
-        private Health selfHealth;
-
-        [Header("ML-Agents Settings")]
-        [SerializeField] private Transform opponentTransform;
-        [SerializeField] private float raycastDistance = 50f;
-        [SerializeField] private LayerMask perceptionLayerMask;
+        private FPSMovement _movementBody;
+        private CharacterController _characterController;
+        private WeaponController _weaponController;
 
         public override void Initialize()
         {
-            movementBody = GetComponent<FPSMovement>();
-            laserWeapon = GetComponentInChildren<WeaponController>();
-            selfHealth = GetComponent<Health>();
+            _movementBody = GetComponent<FPSMovement>();
+            _characterController = GetComponent<CharacterController>();
+            _weaponController = GetComponentInChildren<WeaponController>();
 
             // This is a critical fix for the agent to shoot correctly.
-            laserWeapon.SetAimTransform(movementBody.HeadTransform);
+            _weaponController.SetAimTransform(_movementBody.HeadTransform);
         }
 
         protected override void OnEnable()
@@ -61,21 +57,21 @@ namespace MachineLearningFPS.Character
             bool shoot = actions.DiscreteActions[1] > 0;
             bool crouch = actions.DiscreteActions[2] > 0;
 
-            movementBody.SetInput(
+            _movementBody.SetInput(
                 new Vector2(moveX, moveZ),
                 new Vector2(lookX, lookY),
                 jump,
                 crouch
             );
 
-            if (shoot) laserWeapon.Shoot();
+            if (shoot) _weaponController.Shoot();
 
             if (actions.DiscreteActions[3] > 0)
             {
                 int weaponIndex = actions.DiscreteActions[3] - 1;
-                if (weaponIndex >= 0 && weaponIndex < laserWeapon.WeaponCount)
+                if (weaponIndex >= 0 && weaponIndex < _weaponController.WeaponCount)
                 {
-                    laserWeapon.EquipWeapon(weaponIndex);
+                    _weaponController.EquipWeapon(weaponIndex);
                 }
             }
 
@@ -83,56 +79,94 @@ namespace MachineLearningFPS.Character
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            // --- Self Observations (8 observations) ---
+            // Own velocity (3 values)
+            Vector3 velocity = _characterController.velocity;
+            sensor.AddObservation(velocity.normalized);
+            HUDConsole.Instance.UpdateValue("Velocity", velocity.magnitude);
 
-            // 1. Self Rotation (1 float) - Pitch
-            float currentPitch = movementBody.HeadTransform.localEulerAngles.x;
-            if (currentPitch > 180) currentPitch -= 360;
-            sensor.AddObservation(currentPitch / movementBody.MaxLookAngle);
+            // Is grounded (1 value)
+            bool isGrounded = _characterController.isGrounded;
+            sensor.AddObservation(isGrounded);
+            HUDConsole.Instance.UpdateValue("Grounded", isGrounded);
 
-            // 2. Self Velocity (3 floats) - Relative to agent's facing direction
-            Vector3 localVelocity = transform.InverseTransformDirection(movementBody.Controller.velocity);
-            sensor.AddObservation(localVelocity / movementBody.MoveSpeed);
+            // Is crouching (1 value)
+            bool isCrouching = _characterController.height < 1.2f;
+            sensor.AddObservation(isCrouching);
+            HUDConsole.Instance.UpdateValue("Crouching", isCrouching);
 
-            // 3. Self State (3 bools -> 3 floats)
-            sensor.AddObservation(movementBody.Controller.isGrounded);
-            sensor.AddObservation(movementBody.Controller.height < movementBody.StandingHeight); // Is Crouching
-            sensor.AddObservation(laserWeapon.CanShoot());
+            // Weapon readiness (1 value)
+            float shootReadiness = _weaponController != null ? _weaponController.ShootReadinessPercentage : 0f;
+            sensor.AddObservation(shootReadiness);
+            HUDConsole.Instance.UpdateValue("Shoot Readiness", shootReadiness);
 
-            // 4. Self Health (1 float)
-            sensor.AddObservation(selfHealth.CurrentHealth / selfHealth.maxHealth);
-
-            // --- Perception Observations (14 rays * 3 obs/ray = 42 observations) ---
-            // A fan of rays to understand the environment and locate the opponent.
-            // Each ray provides: 1. Normalized distance, 2. Is it an opponent?, 3. Is it an obstacle?
-            float[] rayAngles = { 0f, 20f, -20f, 45f, -45f, 70f, -70f, 90f, -90f, 135f, -135f, 180f }; // 12 horizontal rays
-            Vector3[] raycastDirections = new Vector3[rayAngles.Length + 2]; // +2 for up and down
-
-            for (int i = 0; i < rayAngles.Length; i++)
+            // Equipped weapon one-hot (3 values)
+            // This is better than a raw index because weapon type is categorical.
+            int currentWeaponIndex = _weaponController != null ? _weaponController.CurrentWeaponIndex : -1;
+            int weaponSlots = 3;
+            for (int i = 0; i < weaponSlots; i++)
             {
-                raycastDirections[i] = Quaternion.Euler(0, rayAngles[i], 0) * transform.forward;
+                sensor.AddObservation(currentWeaponIndex == i);
+                HUDConsole.Instance.UpdateValue($"Weapon {i + 1}", currentWeaponIndex == i);
             }
-            raycastDirections[rayAngles.Length] = Vector3.up;
-            raycastDirections[rayAngles.Length + 1] = Vector3.down;
 
-            foreach (Vector3 dir in raycastDirections)
+            // Raycast-based observations - what a human would see on screen
+            // Cast rays from camera position to detect enemies in view
+            Transform headTransform = _movementBody.HeadTransform;
+            float maxRayDistance = 50f;
+            Vector3 observedTargetDirection = Vector3.zero;
+            float observedTargetDistance = 1f;
+            bool hitEnemy = false;
+            bool hitObstacle = false;
+
+            // Cast rays in a cone pattern (center + 4 directions)
+            Vector3[] rayDirections = new Vector3[]
+            {
+                headTransform.forward,
+                Quaternion.Euler(-15, 0, 0) * headTransform.forward,
+                Quaternion.Euler(15, 0, 0) * headTransform.forward,
+                Quaternion.Euler(0, -15, 0) * headTransform.forward,
+                Quaternion.Euler(0, 15, 0) * headTransform.forward,
+            };
+
+            foreach (Vector3 rayDirection in rayDirections)
             {
                 RaycastHit hit;
-                if (Physics.Raycast(movementBody.HeadTransform.position, dir, out hit, raycastDistance, perceptionLayerMask))
+                if (Physics.Raycast(headTransform.position, rayDirection, out hit, maxRayDistance))
                 {
-                    bool isOpponent = (hit.collider.transform.root == opponentTransform);
-                    sensor.AddObservation(hit.distance / raycastDistance); // Normalized distance
-                    sensor.AddObservation(isOpponent);      // Is it opponent?
-                    sensor.AddObservation(!isOpponent);     // Is it obstacle?
-                }
-                else
-                {
-                    // No hit
-                    sensor.AddObservation(1f);              // Max distance
-                    sensor.AddObservation(false);           // Not an opponent
-                    sensor.AddObservation(false);           // Not an obstacle
+                    Health enemyHealth = hit.collider.GetComponent<Health>();
+                    if (enemyHealth != null && hit.collider.gameObject != gameObject)
+                    {
+                        hitEnemy = true;
+                        observedTargetDistance = hit.distance / maxRayDistance;
+                        observedTargetDirection = (hit.point - headTransform.position).normalized;
+                        break; // Take first enemy hit
+                    }
+
+                    // If ray hit a non-enemy object, record obstacle.
+                    hitObstacle = true;
+                    observedTargetDistance = hit.distance / maxRayDistance;
+                    observedTargetDirection = (hit.point - headTransform.position).normalized;
+                    break;
                 }
             }
+#if UNITY_EDITOR
+            foreach (Vector3 rayDirection in rayDirections)
+            {
+                Debug.DrawRay(headTransform.position, rayDirection * maxRayDistance, Color.red);
+            }
+#endif
+
+            // Raycast observations (6 values)
+            sensor.AddObservation(hitEnemy); // 1 value
+            HUDConsole.Instance.UpdateValue("Ray Hit Enemy", hitEnemy);
+            sensor.AddObservation(hitObstacle); // 1 value
+            HUDConsole.Instance.UpdateValue("Ray Hit Obstacle", hitObstacle);
+            sensor.AddObservation(observedTargetDirection); // 3 values
+            HUDConsole.Instance.UpdateValue("Observed Target Direction", observedTargetDirection);
+            sensor.AddObservation(observedTargetDistance); // 1 value
+            HUDConsole.Instance.UpdateValue("Observed Target Distance", observedTargetDistance);
+
+            // Total observations: 1 + 3 + 1 + 1 + 1 + 1 + 3 + 1 = 15 observations
         }
 
         public override void Heuristic(in ActionBuffers actionsOut)

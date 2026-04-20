@@ -11,11 +11,12 @@ namespace MachineLearningFPS.WeaponSystem
         [SerializeField] private List<Weapon> weapons = new List<Weapon>();
         [SerializeField] private int startingWeaponIndex = 0;
         [SerializeField] private float _laserDuration = 0.05f;
-        [SerializeField] private float _fadeDuration = 0.5f;
+        [SerializeField] private float _fadeDuration = 0.01f;
         public int WeaponCount => weapons.Count;
 
         private Weapon _currentWeapon;
         private int _currentWeaponIndex = -1;
+        public int CurrentWeaponIndex => _currentWeaponIndex;
         private float _lastFireTime;
         private Transform _aimTransform;
 
@@ -56,12 +57,23 @@ namespace MachineLearningFPS.WeaponSystem
             _currentWeaponIndex = index;
             _currentWeapon = weapons[_currentWeaponIndex];
             _currentWeapon.gameObject.SetActive(true);
+            _lastFireTime = Time.time;
         }
 
         public bool CanShoot()
         {
             if (_currentWeapon == null || _currentWeapon.Stats == null) return false;
             return Time.time - _lastFireTime >= _currentWeapon.Stats.FireRate;
+        }
+
+        public float ShootReadinessPercentage
+        {
+            get
+            {
+                if (_currentWeapon == null || _currentWeapon.Stats == null) return 0f;
+                float timeSinceLastShot = Time.time - _lastFireTime;
+                return Mathf.Clamp01(timeSinceLastShot / _currentWeapon.Stats.FireRate);
+            }
         }
 
         public void Shoot()
@@ -119,7 +131,6 @@ namespace MachineLearningFPS.WeaponSystem
         }
 
 
-        // TODO: This method doesn't make the laser fade away properly
         private IEnumerator RenderTraceCoroutine(Vector3 targetPoint, GameObject lineRendererPrefab)
         {
             if (lineRendererPrefab == null)
@@ -137,8 +148,9 @@ namespace MachineLearningFPS.WeaponSystem
                 yield break;
             }
 
-            lr.transform.position = _currentWeapon.FirePoint.position;
-            lr.SetPosition(0, _currentWeapon.FirePoint.position);
+            Transform firePoint = _currentWeapon.FirePoint;
+            lr.transform.position = firePoint.position;
+            lr.SetPosition(0, firePoint.position);
             lr.SetPosition(1, targetPoint);
             lr.enabled = true;
 
@@ -158,6 +170,7 @@ namespace MachineLearningFPS.WeaponSystem
                 float t = Mathf.Clamp01(elapsed / _fadeDuration);
                 lr.startColor = Color.Lerp(originalStartColor, transparentStartColor, t);
                 lr.endColor = Color.Lerp(originalEndColor, transparentEndColor, t);
+                lr.SetPosition(0, firePoint.position);
                 yield return null;
             }
 

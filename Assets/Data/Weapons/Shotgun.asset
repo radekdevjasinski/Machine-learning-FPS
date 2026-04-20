@@ -15,5 +15,5 @@ MonoBehaviour:
   damage: 1
   range: 50
   fireRate: 3
-  projectileCount: 8
+  projectileCount: 4
   spread: 5
