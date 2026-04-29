@@ -12,11 +12,13 @@ namespace MachineLearningFPS.WeaponSystem
         [SerializeField] private int startingWeaponIndex = 0;
         [SerializeField] private float _laserDuration = 0.05f;
         [SerializeField] private float _fadeDuration = 0.01f;
+        [SerializeField] private float _laserCastRadius = 0.25f;
         public int WeaponCount => weapons.Count;
 
         private Weapon _currentWeapon;
         private int _currentWeaponIndex = -1;
         public int CurrentWeaponIndex => _currentWeaponIndex;
+        public float CurrentWeaponRange => _currentWeapon != null && _currentWeapon.Stats != null ? _currentWeapon.Stats.Range : 0f;
         private float _lastFireTime;
         private Transform _aimTransform;
 
@@ -76,22 +78,22 @@ namespace MachineLearningFPS.WeaponSystem
             }
         }
 
-        public void Shoot()
+        public bool Shoot()
         {
-            if (!CanShoot() || _currentWeapon == null) return;
+            if (!CanShoot() || _currentWeapon == null) return false;
 
             WeaponStats currentStats = _currentWeapon.Stats;
             _lastFireTime = Time.time;
 
             if (_aimTransform == null)
             {
-                Debug.LogWarning("Aim Transform not set on WeaponController. This is required for ML-Agents.");
                 var fpsMovement = GetComponentInParent<FPSMovement>();
                 if (fpsMovement != null) _aimTransform = fpsMovement.HeadTransform;
-                else return;
+                else return false;
             }
 
             ShootWeapon(currentStats);
+            return true;
         }
 
         private void ShootWeapon(WeaponStats stats)
@@ -111,14 +113,22 @@ namespace MachineLearningFPS.WeaponSystem
                 RaycastHit hit;
                 Vector3 endPoint;
 
-                if (Physics.Raycast(ray, out hit, stats.Range))
+                if (Physics.SphereCast(ray.origin, _laserCastRadius, ray.direction, out hit, stats.Range))
                 {
                     endPoint = hit.point;
 
                     Health targetHealth = hit.collider.GetComponent<Health>();
-                    if (targetHealth != null)
+                    if (targetHealth != null && hit.collider.gameObject != this.gameObject)
                     {
-                        targetHealth.TakeDamage(stats.Damage);
+                        Health thisHealth = GetComponentInParent<Health>();
+                        if (thisHealth != null)
+                        {
+                            targetHealth.TakeDamage(stats.Damage, thisHealth);
+                        }
+                        else
+                        {
+                            targetHealth.TakeDamage(stats.Damage, null);
+                        }
                     }
                 }
                 else

@@ -5,66 +5,91 @@ using Unity.MLAgents.Sensors;
 using UnityEngine.InputSystem;
 
 using MachineLearningFPS.WeaponSystem;
-using MachineLearningFPS.UI;
+using MachineLearningFPS.Environment;
+using System.Collections.Generic;
+using System;
+using System.Collections;
 
 namespace MachineLearningFPS.Character
 {
     [RequireComponent(typeof(FPSMovement))]
     public class MLController : Agent
     {
-        [Header("Input Actions (For Heuristic Only)")]
-        public InputActionReference moveAction;
-        public InputActionReference lookAction;
-        public InputActionReference jumpAction;
-        public InputActionReference shootAction;
-        public InputActionReference crouchAction;
-        public InputActionReference selectWeapon1;
-        public InputActionReference selectWeapon2;
-        public InputActionReference selectWeapon3;
+        [Header("Episode Controller Reference")]
+        [SerializeField] private EpisodeController _episodeController;
+        private bool _firstSightRewardGiven = false;
 
+        [Header("Agent Look Settings")]
+        [SerializeField] private float _agentLookSensitivity = 1f;
+
+        [SerializeField] private int _teamID = 0;
+        public int TeamID => _teamID;
 
         private FPSMovement _movementBody;
         private CharacterController _characterController;
         private WeaponController _weaponController;
+        private IInputProvider _inputProvider;
+        public WeaponController Weapon => _weaponController;
+        private bool _isSensorDataStale = false;
+        private Vector2 _currentAgentMoveInput;
+        private Vector2 _targetAgentLookInput;
+        private bool _currentAgentJump;
+        private bool _currentAgentCrouch;
+
+        public event Action OnEpisodeEnded;
+        public event Action OnAgentShot;
+        public event Action OnAgentKilledEnemy;
+        public event Action OnAgentDied;
 
         public override void Initialize()
         {
             _movementBody = GetComponent<FPSMovement>();
             _characterController = GetComponent<CharacterController>();
             _weaponController = GetComponentInChildren<WeaponController>();
-
-            // This is a critical fix for the agent to shoot correctly.
+            _inputProvider = GetComponent<IInputProvider>();
             _weaponController.SetAimTransform(_movementBody.HeadTransform);
+
         }
 
-        protected override void OnEnable()
+        public override void OnEpisodeBegin()
         {
-            base.OnEnable();
-            moveAction?.action.Enable();
-            lookAction?.action.Enable();
-            jumpAction?.action.Enable();
-            shootAction?.action.Enable();
-            crouchAction?.action.Enable();
+            OnEpisodeEnded?.Invoke();
+            _firstSightRewardGiven = false;
+            _isSensorDataStale = true;
+            base.OnEpisodeBegin();
+
         }
+
         public override void OnActionReceived(ActionBuffers actions)
         {
             float moveX = actions.ContinuousActions[0];
             float moveZ = actions.ContinuousActions[1];
             float lookX = actions.ContinuousActions[2];
-            float lookY = actions.ContinuousActions[3];
+            float lookY = _episodeController.Curriculum.EnableVerticalLooking ? actions.ContinuousActions[3] : 0f;
 
-            bool jump = actions.DiscreteActions[0] > 0;
+            _currentAgentJump = actions.DiscreteActions[0] > 0;
             bool shoot = actions.DiscreteActions[1] > 0;
-            bool crouch = actions.DiscreteActions[2] > 0;
+            _currentAgentCrouch = actions.DiscreteActions[2] > 0;
 
-            _movementBody.SetInput(
-                new Vector2(moveX, moveZ),
-                new Vector2(lookX, lookY),
-                jump,
-                crouch
-            );
+            _currentAgentMoveInput = new Vector2(moveX, moveZ);
+            _targetAgentLookInput = new Vector2(lookX, lookY);
 
-            if (shoot) _weaponController.Shoot();
+            if (shoot)
+            {
+                if (_weaponController.Shoot())
+                {
+                    OnAgentShot?.Invoke();
+                    bool enemyHit = CheckHitEnemy();
+                    if (enemyHit && _episodeController.Curriculum.EnableGoodShootReward)
+                    {
+                        AddReward(_episodeController.Curriculum.RewardForGoodShoot);
+                    }
+                    else if (!enemyHit && _episodeController.Curriculum.EnableBadShootPenalty)
+                    {
+                        AddReward(_episodeController.Curriculum.PenaltyForBadShoot);
+                    }
+                }
+            }
 
             if (actions.DiscreteActions[3] > 0)
             {
@@ -74,99 +99,36 @@ namespace MachineLearningFPS.Character
                     _weaponController.EquipWeapon(weaponIndex);
                 }
             }
-
         }
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            // Own velocity (3 values)
-            Vector3 velocity = _characterController.velocity;
-            sensor.AddObservation(velocity.normalized);
-            HUDConsole.Instance.UpdateValue("Velocity", velocity.magnitude);
+            // ML-Agents updates sensors right before calling CollectObservations. 
+            _isSensorDataStale = false;
 
-            // Is grounded (1 value)
+            // Own local velocity
+            Vector3 localVelocity = transform.InverseTransformDirection(_characterController.velocity);
+            sensor.AddObservation(localVelocity / Mathf.Max(_movementBody.MoveSpeed, 1f));
+
+            // Is grounded
             bool isGrounded = _characterController.isGrounded;
             sensor.AddObservation(isGrounded);
-            HUDConsole.Instance.UpdateValue("Grounded", isGrounded);
 
-            // Is crouching (1 value)
+            // Is crouching
             bool isCrouching = _characterController.height < 1.2f;
             sensor.AddObservation(isCrouching);
-            HUDConsole.Instance.UpdateValue("Crouching", isCrouching);
 
-            // Weapon readiness (1 value)
+            // Weapon readiness
             float shootReadiness = _weaponController != null ? _weaponController.ShootReadinessPercentage : 0f;
             sensor.AddObservation(shootReadiness);
-            HUDConsole.Instance.UpdateValue("Shoot Readiness", shootReadiness);
 
-            // Equipped weapon one-hot (3 values)
-            // This is better than a raw index because weapon type is categorical.
+            // Equipped weapon one-hot
             int currentWeaponIndex = _weaponController != null ? _weaponController.CurrentWeaponIndex : -1;
-            int weaponSlots = 3;
-            for (int i = 0; i < weaponSlots; i++)
+            int weaponCount = _weaponController != null ? _weaponController.WeaponCount : 0;
+            for (int i = 0; i < weaponCount; i++)
             {
                 sensor.AddObservation(currentWeaponIndex == i);
-                HUDConsole.Instance.UpdateValue($"Weapon {i + 1}", currentWeaponIndex == i);
             }
-
-            // Raycast-based observations - what a human would see on screen
-            // Cast rays from camera position to detect enemies in view
-            Transform headTransform = _movementBody.HeadTransform;
-            float maxRayDistance = 50f;
-            Vector3 observedTargetDirection = Vector3.zero;
-            float observedTargetDistance = 1f;
-            bool hitEnemy = false;
-            bool hitObstacle = false;
-
-            // Cast rays in a cone pattern (center + 4 directions)
-            Vector3[] rayDirections = new Vector3[]
-            {
-                headTransform.forward,
-                Quaternion.Euler(-15, 0, 0) * headTransform.forward,
-                Quaternion.Euler(15, 0, 0) * headTransform.forward,
-                Quaternion.Euler(0, -15, 0) * headTransform.forward,
-                Quaternion.Euler(0, 15, 0) * headTransform.forward,
-            };
-
-            foreach (Vector3 rayDirection in rayDirections)
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(headTransform.position, rayDirection, out hit, maxRayDistance))
-                {
-                    Health enemyHealth = hit.collider.GetComponent<Health>();
-                    if (enemyHealth != null && hit.collider.gameObject != gameObject)
-                    {
-                        hitEnemy = true;
-                        observedTargetDistance = hit.distance / maxRayDistance;
-                        observedTargetDirection = (hit.point - headTransform.position).normalized;
-                        break; // Take first enemy hit
-                    }
-
-                    // If ray hit a non-enemy object, record obstacle.
-                    hitObstacle = true;
-                    observedTargetDistance = hit.distance / maxRayDistance;
-                    observedTargetDirection = (hit.point - headTransform.position).normalized;
-                    break;
-                }
-            }
-#if UNITY_EDITOR
-            foreach (Vector3 rayDirection in rayDirections)
-            {
-                Debug.DrawRay(headTransform.position, rayDirection * maxRayDistance, Color.red);
-            }
-#endif
-
-            // Raycast observations (6 values)
-            sensor.AddObservation(hitEnemy); // 1 value
-            HUDConsole.Instance.UpdateValue("Ray Hit Enemy", hitEnemy);
-            sensor.AddObservation(hitObstacle); // 1 value
-            HUDConsole.Instance.UpdateValue("Ray Hit Obstacle", hitObstacle);
-            sensor.AddObservation(observedTargetDirection); // 3 values
-            HUDConsole.Instance.UpdateValue("Observed Target Direction", observedTargetDirection);
-            sensor.AddObservation(observedTargetDistance); // 1 value
-            HUDConsole.Instance.UpdateValue("Observed Target Distance", observedTargetDistance);
-
-            // Total observations: 1 + 3 + 1 + 1 + 1 + 1 + 3 + 1 = 15 observations
         }
 
         public override void Heuristic(in ActionBuffers actionsOut)
@@ -181,20 +143,22 @@ namespace MachineLearningFPS.Character
             bool crouch = false;
             int weaponSelect = -1;
 
+            if (_inputProvider != null)
+            {
+                moveInput = _inputProvider.MoveInput;
+                lookInput = _inputProvider.LookInput;
+                if (_episodeController.Curriculum.EnableJumping) jump = _inputProvider.JumpInput;
+                if (_episodeController.Curriculum.EnableCrouching) crouch = _inputProvider.CrouchInput;
+                shoot = _inputProvider.ShootInput;
 
-            if (moveAction != null) moveInput = moveAction.action.ReadValue<Vector2>();
-            if (lookAction != null) lookInput = lookAction.action.ReadValue<Vector2>();
-            if (jumpAction != null) jump = jumpAction.action.IsPressed();
-            if (shootAction != null) shoot = shootAction.action.IsPressed();
-            if (crouchAction != null) crouch = crouchAction.action.IsPressed();
-            if (selectWeapon1 != null && selectWeapon1.action.IsPressed()) weaponSelect = 0;
-            if (selectWeapon2 != null && selectWeapon2.action.IsPressed()) weaponSelect = 1;
-            if (selectWeapon3 != null && selectWeapon3.action.IsPressed()) weaponSelect = 2;
+                if (_episodeController.Curriculum.EnableWeaponSwapping)
+                    weaponSelect = _inputProvider.WeaponSelectInput;
+            }
 
             continuousActionsOut[0] = moveInput.x;
             continuousActionsOut[1] = moveInput.y;
             continuousActionsOut[2] = lookInput.x;
-            continuousActionsOut[3] = lookInput.y;
+            continuousActionsOut[3] = _episodeController.Curriculum.EnableVerticalLooking ? lookInput.y : 0f;
 
             discreteActionsOut[0] = jump ? 1 : 0;
             discreteActionsOut[1] = shoot ? 1 : 0;
@@ -202,5 +166,111 @@ namespace MachineLearningFPS.Character
             discreteActionsOut[3] = weaponSelect >= 0 ? weaponSelect + 1 : 0; // +1 because 0 means "no change"
 
         }
+
+        public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask)
+        {
+            if (!_episodeController.Curriculum.EnableJumping)
+            {
+                actionMask.SetActionEnabled(0, 1, false);
+            }
+
+            if (!_episodeController.Curriculum.EnableCrouching)
+            {
+                actionMask.SetActionEnabled(2, 1, false);
+            }
+
+            if (!_episodeController.Curriculum.EnableWeaponSwapping)
+            {
+                int weaponCount = _weaponController != null ? _weaponController.WeaponCount : 0;
+                for (int i = 1; i <= weaponCount; i++)
+                {
+                    actionMask.SetActionEnabled(3, i, false);
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (_movementBody != null)
+            {
+                Vector2 finalLookInput = _targetAgentLookInput * _agentLookSensitivity;
+
+                _movementBody.SetInput(
+                    _currentAgentMoveInput,
+                    finalLookInput,
+                    _currentAgentJump,
+                    _currentAgentCrouch
+                );
+
+                _currentAgentJump = false;
+            }
+
+            if (!_isSensorDataStale)
+            {
+                CalculateEnvironmentRewards();
+            }
+        }
+
+        private void CalculateEnvironmentRewards()
+        {
+            bool centerRayHit = CheckHitEnemy();
+            if (centerRayHit && _episodeController.Curriculum.EnableFirstSightReward && !_firstSightRewardGiven)
+            {
+                AddReward(_episodeController.Curriculum.RewardForFirstSight);
+                _firstSightRewardGiven = true;
+            }
+            if (centerRayHit && _episodeController.Curriculum.EnableLookingAtEnemyReward)
+            {
+                AddReward(_episodeController.Curriculum.RewardForLookingAtEnemy * Time.deltaTime);
+            }
+            ApplyContinuousRewards();
+        }
+
+        private void ApplyContinuousRewards()
+        {
+            if (_episodeController.Curriculum.EnableExistancePenalty)
+            {
+                AddReward(_episodeController.Curriculum.ExistancePenaltyAmount * Time.deltaTime);
+            }
+        }
+
+        private bool CheckHitEnemy()
+        {
+            if (_movementBody == null || _movementBody.HeadTransform == null) return false;
+
+            float rayDistance = _weaponController != null ? _weaponController.CurrentWeaponRange : 0f;
+            int layerMask = LayerMask.GetMask("Player", "Default");
+
+            if (Physics.Raycast(_movementBody.HeadTransform.position, _movementBody.HeadTransform.forward, out RaycastHit hit, rayDistance, layerMask))
+            {
+                if (hit.collider.CompareTag("Player") && hit.collider.gameObject != this.gameObject)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public void ApplyKillReward()
+        {
+            AddReward(_episodeController.Curriculum.KillRewardAmount);
+            OnAgentKilledEnemy?.Invoke();
+        }
+        public void ApplyDeathPenalty()
+        {
+            //AddReward(-10f);
+            OnAgentDied?.Invoke();
+        }
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (!_episodeController.Curriculum.EnableWallHitPenalty) return;
+            if (hit.gameObject.CompareTag("Obstacle"))
+            {
+                if (Mathf.Abs(hit.normal.y) < 0.2f)
+                {
+                    AddReward(_episodeController.Curriculum.PenaltyForWallHit * Time.deltaTime);
+                }
+            }
+        }
     }
+
 }

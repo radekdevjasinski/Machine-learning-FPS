@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using MachineLearningFPS.Camera;
 
 namespace MachineLearningFPS.UI
 {
@@ -10,6 +11,7 @@ namespace MachineLearningFPS.UI
         [SerializeField] private TMP_Text consoleText;
         [SerializeField] private bool enableObservationDisplay = true;
 
+        private Transform _activeTarget;
         private Dictionary<string, object> _observations = new Dictionary<string, object>();
         private static HUDConsole _instance;
 
@@ -31,31 +33,35 @@ namespace MachineLearningFPS.UI
             {
                 consoleText = GetComponentInChildren<TMP_Text>();
             }
+            SpectatorManager.OnActiveTargetChanged += HandleTargetChanged;
         }
 
-        /// <summary>
-        /// Updates or adds an observation value. If the name exists, updates it; otherwise adds new.
-        /// </summary>
-        public void UpdateValue(string name, object value)
+        private void OnDisable()
+        {
+            SpectatorManager.OnActiveTargetChanged -= HandleTargetChanged;
+        }
+
+        private void HandleTargetChanged(Transform newTarget)
+        {
+            _activeTarget = newTarget;
+            Clear();
+        }
+
+        public void UpdateValue(Transform source, string name, object value)
         {
             if (!enableObservationDisplay) return;
+            if (source != _activeTarget) return;
 
             _observations[name] = value;
             RefreshDisplay();
         }
 
-        /// <summary>
-        /// Clears all observations from the display.
-        /// </summary>
         public void Clear()
         {
             _observations.Clear();
             RefreshDisplay();
         }
 
-        /// <summary>
-        /// Refreshes the UI text with all current observations.
-        /// </summary>
         private void RefreshDisplay()
         {
             if (consoleText == null) return;
@@ -69,9 +75,6 @@ namespace MachineLearningFPS.UI
             consoleText.text = displayText;
         }
 
-        /// <summary>
-        /// Formats values for readable display.
-        /// </summary>
         private string FormatValue(object value)
         {
             if (value is bool boolValue)
@@ -81,7 +84,7 @@ namespace MachineLearningFPS.UI
 
             if (value is float floatValue)
             {
-                return floatValue.ToString("F1");
+                return floatValue.ToString("F3");
             }
 
             if (value is Vector3 vec3)
@@ -97,19 +100,13 @@ namespace MachineLearningFPS.UI
             return value?.ToString() ?? "null";
         }
 
-        /// <summary>
-        /// Gets the singleton instance (optional, for static access).
-        /// </summary>
         public static HUDConsole Instance => _instance;
 
-        /// <summary>
-        /// Static method for convenience.
-        /// </summary>
-        public static void Log(string name, object value)
+        public static void Log(Transform source, string name, object value)
         {
             if (_instance != null)
             {
-                _instance.UpdateValue(name, value);
+                _instance.UpdateValue(source, name, value);
             }
         }
     }

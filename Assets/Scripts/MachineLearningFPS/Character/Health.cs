@@ -6,29 +6,34 @@ namespace MachineLearningFPS.Character
     {
         public float maxHealth = 1f;
         public float CurrentHealth { get; private set; }
-        public event Action<GameObject> OnDeath;
+        public event Action<GameObject, GameObject> OnDeath;
 
         void Start()
         {
             CurrentHealth = maxHealth;
         }
 
-        public void TakeDamage(float amount)
+        public void ResetHealth()
+        {
+            CurrentHealth = maxHealth;
+            //gameObject.SetActive(true);
+        }
+
+        public void TakeDamage(float amount, Health source)
         {
             CurrentHealth -= amount;
             if (CurrentHealth <= 0)
             {
-                Die();
+                Die(source);
             }
         }
 
-        private void Die()
+        private void Die(Health killer)
         {
             Debug.Log($"{gameObject.name} has died.");
-            OnDeath?.Invoke(gameObject);
-            gameObject.SetActive(false);
+            OnDeath?.Invoke(gameObject, killer.gameObject);
+            //gameObject.SetActive(false);
         }
 
     }
 }
-

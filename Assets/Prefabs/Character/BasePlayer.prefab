@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8141216616755545413}
   m_Layer: 7
   m_Name: Target
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -142,6 +142,8 @@ MonoBehaviour:
   _moveSpeed: 5
   _jumpHeight: 1.5
   _jumpCooldown: 1
+  _backwardSpeedMultiplier: 0.5
+  _strafeSpeedMultiplier: 0.7
   _crouchHeight: 1
   _crouchSpeedMultiplier: 0.5
   _crouchTransitionSpeed: 10
@@ -282,7 +284,7 @@ GameObject:
   - component: {fileID: 2337402712018194025}
   m_Layer: 7
   m_Name: RightHandTarget
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -526,7 +528,7 @@ Transform:
   m_GameObject: {fileID: 6433189756234788048}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: 0.1, y: -0.4, z: 3}
+  m_LocalPosition: {x: 0, y: -0.4, z: 3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -564,7 +566,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 100
+  far clip plane: 5
   field of view: 50
   orthographic: 1
   orthographic size: 1.1
@@ -752,7 +754,7 @@ GameObject:
   - component: {fileID: 5635818470779978283}
   m_Layer: 7
   m_Name: Weapon
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -818,6 +820,7 @@ MonoBehaviour:
   startingWeaponIndex: 0
   _laserDuration: 0.05
   _fadeDuration: 0.01
+  _laserCastRadius: 0.25
 --- !u!1 &8086423531757231135
 GameObject:
   m_ObjectHideFlags: 0
@@ -878,7 +881,7 @@ GameObject:
   - component: {fileID: 6134578227720713281}
   m_Layer: 7
   m_Name: RigTargets
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -945,7 +948,7 @@ GameObject:
   - component: {fileID: 9182917590051691424}
   m_Layer: 7
   m_Name: Head
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -959,7 +962,7 @@ Transform:
   m_GameObject: {fileID: 8395055415511891811}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 0.4, z: 0}
+  m_LocalPosition: {x: 0, y: 0.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1386,6 +1389,10 @@ PrefabInstance:
     - target: {fileID: 3442035376595726660, guid: 5cae6d7d0922fd44e8c052d92fe9a0ce, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3442035376595726660, guid: 5cae6d7d0922fd44e8c052d92fe9a0ce, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 3631620796558273419, guid: 5cae6d7d0922fd44e8c052d92fe9a0ce, type: 3}
       propertyPath: m_Layer

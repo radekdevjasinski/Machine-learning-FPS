@@ -9,6 +9,8 @@ namespace MachineLearningFPS.Character
         [SerializeField] private float _moveSpeed = 5f;
         [SerializeField] private float _jumpHeight = 1.5f;
         [SerializeField] private float _jumpCooldown = 1f;
+        [SerializeField] private float _backwardSpeedMultiplier = 0.5f;
+        [SerializeField] private float _strafeSpeedMultiplier = 0.7f;
         static readonly float GRAVITY = -9.81f;
 
         [Header("Crouch Settings")]
@@ -63,6 +65,15 @@ namespace MachineLearningFPS.Character
             this._currentCrouchInput = crouchInput;
         }
 
+        public void ResetMovement()
+        {
+            _velocity = Vector3.zero;
+            _currentMoveInput = Vector2.zero;
+            _currentLookInput = Vector2.zero;
+            _currentJumpInput = false;
+            _currentCrouchInput = false;
+        }
+
         void Update()
         {
             // --- 1. ROZGLĄDANIE SIĘ ---
@@ -106,7 +117,10 @@ namespace MachineLearningFPS.Character
             _currentJumpInput = false;
 
             // --- 4. PORUSZANIE SIĘ ---
-            Vector3 moveDirection = transform.right * _currentMoveInput.x + transform.forward * _currentMoveInput.y;
+            float adjustedInputX = _currentMoveInput.x * _strafeSpeedMultiplier;
+            float adjustedInputY = _currentMoveInput.y < 0 ? _currentMoveInput.y * _backwardSpeedMultiplier : _currentMoveInput.y;
+
+            Vector3 moveDirection = transform.right * adjustedInputX + transform.forward * adjustedInputY;
 
             if (moveDirection.magnitude > 1f)
             {
@@ -119,5 +133,6 @@ namespace MachineLearningFPS.Character
 
             _controller.Move(finalMovement * Time.deltaTime);
         }
+
     }
 }

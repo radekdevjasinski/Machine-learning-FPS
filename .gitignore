@@ -10,6 +10,7 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+/ml-agents
 *.log
 
 # MemoryCaptures can get excessive in size.
