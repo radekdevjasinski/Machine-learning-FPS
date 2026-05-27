@@ -72,6 +72,8 @@ namespace MachineLearningFPS.Character
             _currentLookInput = Vector2.zero;
             _currentJumpInput = false;
             _currentCrouchInput = false;
+            _xRotation = 0f;
+            _headTransform.localRotation = Quaternion.Euler(0f, 0f, 0f);
         }
 
         void Update()

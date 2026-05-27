@@ -21,6 +21,7 @@ namespace MachineLearningFPS.WeaponSystem
         public float CurrentWeaponRange => _currentWeapon != null && _currentWeapon.Stats != null ? _currentWeapon.Stats.Range : 0f;
         private float _lastFireTime;
         private Transform _aimTransform;
+        private RaycastHit[] _hitBuffer = new RaycastHit[32];
 
         private void Awake()
         {
@@ -98,6 +99,8 @@ namespace MachineLearningFPS.WeaponSystem
 
         private void ShootWeapon(WeaponStats stats)
         {
+            Health thisHealth = GetComponentInParent<Health>();
+
             for (int i = 0; i < stats.ProjectileCount; i++)
             {
                 Vector3 direction = _aimTransform.forward;
@@ -110,30 +113,42 @@ namespace MachineLearningFPS.WeaponSystem
                 }
 
                 Ray ray = new Ray(_aimTransform.position, direction);
-                RaycastHit hit;
-                Vector3 endPoint;
+                Vector3 endPoint = ray.GetPoint(stats.Range);
 
-                if (Physics.SphereCast(ray.origin, _laserCastRadius, ray.direction, out hit, stats.Range))
+                int hitCount = Physics.SphereCastNonAlloc(ray.origin, _laserCastRadius, ray.direction, _hitBuffer, stats.Range);
+
+                if (hitCount > 0)
                 {
-                    endPoint = hit.point;
+                    float closestDistance = float.MaxValue;
+                    bool hitValidTarget = false;
+                    RaycastHit closestHit = default;
+                    Health closestHealth = null;
 
-                    Health targetHealth = hit.collider.GetComponent<Health>();
-                    if (targetHealth != null && hit.collider.gameObject != this.gameObject)
+                    for (int j = 0; j < hitCount; j++)
                     {
-                        Health thisHealth = GetComponentInParent<Health>();
-                        if (thisHealth != null)
+                        RaycastHit hit = _hitBuffer[j];
+                        Health targetHealth = hit.collider.GetComponentInParent<Health>();
+
+                        if (targetHealth != null && targetHealth == thisHealth) continue;
+
+                        if (hit.distance < closestDistance)
                         {
-                            targetHealth.TakeDamage(stats.Damage, thisHealth);
-                        }
-                        else
-                        {
-                            targetHealth.TakeDamage(stats.Damage, null);
+                            closestDistance = hit.distance;
+                            closestHit = hit;
+                            closestHealth = targetHealth;
+                            hitValidTarget = true;
                         }
                     }
-                }
-                else
-                {
-                    endPoint = ray.GetPoint(stats.Range);
+
+                    if (hitValidTarget)
+                    {
+                        // If the sphere starts overlapping a collider, distance is 0 and point is Vector3.zero
+                        endPoint = closestHit.distance == 0f ? ray.origin : closestHit.point;
+                        if (closestHealth != null)
+                        {
+                            closestHealth.TakeDamage(stats.Damage, thisHealth);
+                        }
+                    }
                 }
 
                 StartCoroutine(RenderTraceCoroutine(endPoint, _currentWeapon.LineRendererPrefab));
@@ -157,6 +172,10 @@ namespace MachineLearningFPS.WeaponSystem
                 Destroy(gameObject);
                 yield break;
             }
+
+            float laserThickness = _laserCastRadius;
+            lr.startWidth = laserThickness;
+            lr.endWidth = laserThickness / 2f;
 
             Transform firePoint = _currentWeapon.FirePoint;
             lr.transform.position = firePoint.position;

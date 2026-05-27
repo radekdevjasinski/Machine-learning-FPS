@@ -6,17 +6,23 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/lesson1training.unity
-    guid: eb61ec245f0f5104ab4158c0d4dd7268
+    path: Assets/Scenes/1.unity
+    guid: 9b36379af81c06842bb212a40bafe9f0
   - enabled: 0
-    path: Assets/Scenes/lesson2training.unity
-    guid: 0d20c6c42deb97d49ad55f3e5f29f404
+    path: Assets/Scenes/0 training.unity
+    guid: f1650b8cd0131004b93662e658cd7147
   - enabled: 0
-    path: Assets/Scenes/lesson2.5training.unity
-    guid: 03fd0d52008428241bab46be30437ec0
+    path: Assets/Scenes/1training.unity
+    guid: 8a14512157753cf409d8bb948649fa1e
+  - enabled: 0
+    path: Assets/Scenes/2training.unity
+    guid: f8441a4c1a6ad24468ec8b827ea2105f
+  - enabled: 0
+    path: Assets/Scenes/1 training.unity
+    guid: 3b0bf5fe51a8e76438de055debe55da8
   - enabled: 1
-    path: Assets/Scenes/lesson3training.unity
-    guid: 151262fb3ed3715498ef4a18bde85a48
+    path: Assets/Scenes/2 training.unity
+    guid: 6c859fa4133fe744bb2da6d2cf0657e9
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

@@ -3045,6 +3045,9 @@ MonoBehaviour:
   _blueTeamScoreText: {fileID: 954239904}
   _redTeamScoreText: {fileID: 1182740713}
   _episodeCountText: {fileID: 971508690}
+  healthBarParent: {fileID: 0}
+  healthBarPrefab: {fileID: 0}
+  maxHealthBars: 10
 --- !u!114 &1827238602
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3932,7 +3935,7 @@ PrefabInstance:
       objectReference: {fileID: 1704662189}
     - target: {fileID: 1400905555919665520, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_VersionIndex
-      value: 5838
+      value: 5850
       objectReference: {fileID: 0}
     - target: {fileID: 1745025563236370580, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_Mesh
@@ -3940,7 +3943,7 @@ PrefabInstance:
       objectReference: {fileID: 1052684716}
     - target: {fileID: 1745025563236370580, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_VersionIndex
-      value: 5145
+      value: 5157
       objectReference: {fileID: 0}
     - target: {fileID: 4272055380483064740, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_Mesh
@@ -3952,7 +3955,7 @@ PrefabInstance:
       objectReference: {fileID: 497346722}
     - target: {fileID: 5363481549826225946, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_VersionIndex
-      value: 10666
+      value: 10678
       objectReference: {fileID: 0}
     - target: {fileID: 5637358210101208603, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_Mesh
@@ -3968,7 +3971,7 @@ PrefabInstance:
       objectReference: {fileID: 1064618231}
     - target: {fileID: 6570749996622116705, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_VersionIndex
-      value: 5838
+      value: 5850
       objectReference: {fileID: 0}
     - target: {fileID: 6655976524571023341, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_Mesh
@@ -4044,7 +4047,7 @@ PrefabInstance:
       objectReference: {fileID: 1458607928}
     - target: {fileID: 8796854467505590434, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_VersionIndex
-      value: 5145
+      value: 5157
       objectReference: {fileID: 0}
     - target: {fileID: 8860283771594145731, guid: c071ed898fc6e6d4bb9862602a46acce, type: 3}
       propertyPath: m_Mesh

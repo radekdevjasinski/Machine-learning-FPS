@@ -6,6 +6,7 @@ using MachineLearningFPS.Camera;
 using MachineLearningFPS.WeaponSystem;
 using MachineLearningFPS.Environment;
 using TMPro;
+using UnityEngine.XR;
 
 namespace MachineLearningFPS.UI
 {
@@ -24,12 +25,18 @@ namespace MachineLearningFPS.UI
         [SerializeField] private TMP_Text _redTeamScoreText;
         [SerializeField] private TMP_Text _episodeCountText;
 
+        [Header("Health UI")]
+        [SerializeField] private Transform healthBarParent;
+        [SerializeField] private GameObject healthBarPrefab;
+        [SerializeField] private int maxHealthBars = 10;
+
         private int _blueTeamScore = 0;
         private int _redTeamScore = 0;
         private int _episodeCount = 0;
 
 
         private SpectatorManager _spectatorManager;
+        private Health _activeHealth;
         private WeaponController _activeWeaponController;
 
         private void OnEnable()
@@ -38,6 +45,7 @@ namespace MachineLearningFPS.UI
             SpectatorManager.OnActiveTargetChanged += HandleActiveTargetChanged;
             EpisodeController.OnPlayerKilled += AddTeamScore;
             EpisodeController.OnEpisodeReset += EpisodeChange;
+            Health.OnHealthChanged += UpdateHealthBar;
         }
 
         private void OnDisable()
@@ -46,6 +54,7 @@ namespace MachineLearningFPS.UI
             SpectatorManager.OnActiveTargetChanged -= HandleActiveTargetChanged;
             EpisodeController.OnPlayerKilled -= AddTeamScore;
             EpisodeController.OnEpisodeReset -= EpisodeChange;
+            Health.OnHealthChanged -= UpdateHealthBar;
         }
         void Start()
         {
@@ -88,6 +97,24 @@ namespace MachineLearningFPS.UI
                 movementStateText.text = state;
             }
         }
+        public void UpdateHealthBar(Transform healthTransform)
+        {
+            if (healthBarParent != null && _activeHealth != null && _activeHealth.transform == healthTransform)
+            {
+                float healthPercentage = _activeHealth.CurrentHealth / _activeHealth.MaxHealth;
+                int healthBarsToShow = (int)(healthPercentage * maxHealthBars);
+
+                while (healthBarParent.childCount < maxHealthBars)
+                {
+                    Instantiate(healthBarPrefab, healthBarParent);
+                }
+
+                for (int i = 0; i < healthBarParent.childCount; i++)
+                {
+                    healthBarParent.GetChild(i).gameObject.SetActive(i < healthBarsToShow && i < maxHealthBars);
+                }
+            }
+        }
         void Update()
         {
             if (_activeWeaponController != null)
@@ -105,12 +132,15 @@ namespace MachineLearningFPS.UI
             {
                 FPSMovement movement = activeTarget.GetComponentInParent<FPSMovement>();
                 _activeWeaponController = movement.gameObject.GetComponentInChildren<WeaponController>();
+                _activeHealth = activeTarget.GetComponentInParent<Health>();
                 UpdateShootingCooldown(_activeWeaponController != null ? _activeWeaponController.ShootReadinessPercentage : 0f);
                 UpdateMovementState(activeTarget, "Idle");
+                if (_activeHealth != null) UpdateHealthBar(_activeHealth.transform);
             }
             else
             {
                 _activeWeaponController = null;
+                _activeHealth = null;
             }
         }
         private void SwitchHUDElements(bool state)
@@ -139,7 +169,11 @@ namespace MachineLearningFPS.UI
                 _episodeCount += 1;
                 _episodeCountText.text = $"Episode: {_episodeCount + 1}";
             }
-            Debug.Log($"Episode {_episodeCount} started.");
+            if (_spectatorManager.GetCurrentTarget() != null)
+            {
+                HandleActiveTargetChanged(_spectatorManager.GetCurrentTarget());
+            }
         }
+
     }
 }

@@ -48,9 +48,9 @@ MonoBehaviour:
   m_DetectableTags:
   - Obstacle
   - Player
-  m_RaysPerDirection: 5
-  m_MaxRayDegrees: 45
-  m_SphereCastRadius: 0.25
+  m_RaysPerDirection: 7
+  m_MaxRayDegrees: 60
+  m_SphereCastRadius: 0.5
   m_RayLength: 50
   m_RayLayerMask:
     serializedVersion: 2
@@ -110,9 +110,9 @@ MonoBehaviour:
   m_DetectableTags:
   - Obstacle
   - Player
-  m_RaysPerDirection: 5
-  m_MaxRayDegrees: 45
-  m_SphereCastRadius: 0.25
+  m_RaysPerDirection: 7
+  m_MaxRayDegrees: 60
+  m_SphereCastRadius: 0.5
   m_RayLength: 50
   m_RayLayerMask:
     serializedVersion: 2
@@ -172,9 +172,9 @@ MonoBehaviour:
   m_DetectableTags:
   - Obstacle
   - Player
-  m_RaysPerDirection: 5
-  m_MaxRayDegrees: 45
-  m_SphereCastRadius: 0.25
+  m_RaysPerDirection: 7
+  m_MaxRayDegrees: 60
+  m_SphereCastRadius: 0.5
   m_RayLength: 50
   m_RayLayerMask:
     serializedVersion: 2
@@ -277,12 +277,12 @@ PrefabInstance:
       value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 2346319912150806622, guid: 911006d1501b8b04c9e46b95268dd469, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.14999992
+      objectReference: {fileID: 0}
+    - target: {fileID: 2346319912150806622, guid: 911006d1501b8b04c9e46b95268dd469, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4578501383480589338, guid: 911006d1501b8b04c9e46b95268dd469, type: 3}
-      propertyPath: _lookSpeed
-      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -325,7 +325,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 9
+    VectorObservationSize: 17
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 4
@@ -360,10 +360,8 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
   _episodeController: {fileID: 0}
-  _midRaySensor: {fileID: 0}
-  _highRaySensor: {fileID: 0}
-  _lowRaySensor: {fileID: 0}
-  _agentLookSensitivity: 0.5
+  _agentLookSensitivity: 3
+  _health: {fileID: 0}
   _teamID: 0
 --- !u!114 &2532120374239697737
 MonoBehaviour:

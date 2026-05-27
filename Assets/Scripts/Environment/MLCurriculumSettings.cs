@@ -22,6 +22,9 @@ namespace MachineLearningFPS.Environment
         public float RewardForGoodShoot = 0.5f;
         public bool EnableBadShootPenalty = false;
         public float PenaltyForBadShoot = -0.1f;
+        public float AimingConeAngle = 5f;
+        public bool EnableAimingQualityReward = false;
+        public float AimingQualityRewardScale = 0.15f;
 
         [Header("Movement Rewards")]
         public bool EnableWallHitPenalty = false;
@@ -34,8 +37,25 @@ namespace MachineLearningFPS.Environment
         [Header("Episode Rewards")]
         public bool EnableTrucePenalty = false;
         public float TrucePenaltyAmount = -10f;
+        public bool EnableKillReward = true;
         public float KillRewardAmount = 10f;
+        public bool EnableDeathPenalty = false;
+        public float DeathPenaltyAmount = -10f;
 
+        [Header("Damage Settings")]
+        public float DealingDamageRewardScale = 1f;
+        public float TakingDamagePenaltyScale = 1f;
+
+        [Header("Contact Settings")]
+        public bool EnableContactPenalty = false;
+        public float ContactPenaltyAmount = -0.05f;
+        public float ContactDetectionRadius = 1f;
+
+        [Header("Approach Rewards")]
+        public bool EnableApproachReward = false;
+        public float ApproachRewardScale = 20f;
+        public float ApproachRewardMaxDistance = 20f;
+        public float ApproachRewardMinDistance = 3f;
 
     }
 }

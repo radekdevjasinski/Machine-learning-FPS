@@ -77,13 +77,27 @@ namespace MachineLearningFPS.Character
         {
             if (_hudConsole == null) return;
             Vector3 localVelocity = transform.InverseTransformDirection(_characterController.velocity);
-            Vector3 localVelocityFlat = new Vector3(localVelocity.x / Mathf.Max(_movementBody.MoveSpeed, 1f), 0, localVelocity.z / Mathf.Max(_movementBody.MoveSpeed, 1f));
-            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Position", transform.position);
-            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Velocity", localVelocityFlat);
+            Vector3 normalizedVelocity = localVelocity / Mathf.Max(_movementBody.MoveSpeed, 1f);
+
+            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Velocity", normalizedVelocity);
+            _hudConsole.UpdateValue(_movementBody.HeadTransform, "View Direction", _movementBody.HeadTransform.forward);
             _hudConsole.UpdateValue(_movementBody.HeadTransform, "Grounded", _characterController.isGrounded);
             _hudConsole.UpdateValue(_movementBody.HeadTransform, "Crouching", _characterController.height < 1.2f);
-            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Shoot Readiness", _mlController.Weapon.ShootReadinessPercentage);
-            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Active Weapon", _mlController.Weapon.CurrentWeaponIndex >= 0 ? $"Weapon {_mlController.Weapon.CurrentWeaponIndex}" : "-1");
+
+            float shootReadiness = _mlController.Weapon != null ? _mlController.Weapon.ShootReadinessPercentage : 0f;
+            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Shoot Readiness", shootReadiness);
+
+            string activeWeapon = _mlController.Weapon != null && _mlController.Weapon.CurrentWeaponIndex >= 0 ? $"Weapon {_mlController.Weapon.CurrentWeaponIndex}" : "-1";
+            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Active Weapon", activeWeapon);
+
+            float normHealth = _mlController.AgentHealth != null ? Mathf.Clamp01(_mlController.AgentHealth.CurrentHealth / _mlController.AgentHealth.MaxHealth) : 1f;
+            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Health Normalised", normHealth);
+
+            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Enemy Dir (Local)", _mlController.LastKnownEnemyLocalDir);
+
+            float timeSinceEnemySeenNorm = Mathf.Clamp01(_mlController.TimeSinceEnemySeen / 5f);
+            _hudConsole.UpdateValue(_movementBody.HeadTransform, "Time Since Enemy Seen", timeSinceEnemySeenNorm);
+
             float reward = _mlController.GetCumulativeReward();
             _hudConsole.UpdateValue(_movementBody.HeadTransform, "Reward", reward);
         }

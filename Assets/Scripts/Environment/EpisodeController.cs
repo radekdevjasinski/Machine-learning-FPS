@@ -7,45 +7,43 @@ namespace MachineLearningFPS.Environment
 {
     public class EpisodeController : MonoBehaviour
     {
-        [Header("Environment Settings")]
+        [Header("Episode Settings")]
         [SerializeField] private List<MLController> _agents;
-        [SerializeField] private Transform _spawnPointsParent;
-        [SerializeField] private float _maxEpisodeLength = 60f;
-        [SerializeField] private bool _applyStartingRotationRandomization = true;
-        [SerializeField] private bool _usePredifinedSpawnPoints = true;
-        [Serializable]
-        private struct LevelBounds
-        {
-            public float MinX, MaxX, MinZ, MaxZ;
-        }
-        [SerializeField] private LevelBounds _levelBounds;
+        [SerializeField] private int _maxEpisodeSteps = 1500;
+        private int _currentEpisodeSteps = 0;
+        private bool _timeUp = false;
+
+        [Header("References")]
+        [SerializeField] private ArenaController _arenaController;
+        [SerializeField] private BattleRoyaleZone _battleRoyaleZone;
+
 
         [Header("Curriculum Settings")]
         [SerializeField] private MLCurriculumSettings _curriculum;
         public MLCurriculumSettings Curriculum => _curriculum;
-        private List<Transform> _spawnPoints;
-        private float _currentEpisodeTime = 0f;
-        private bool _timeUp = false;
 
         public static event Action<int> OnPlayerKilled;
         public static event Action OnEpisodeReset;
+        public event Action<float> OnAgentEpisodeEnd;
 
         private void Start()
         {
+            List<Health> healthList = new List<Health>();
             foreach (var agent in _agents)
             {
                 if (agent.TryGetComponent(out Health health))
                 {
                     health.OnDeath += HandleAgentDeath;
+                    health.OnDamageTaken += HandleAgentDamage;
+                    healthList.Add(health);
                 }
-            }
-            _spawnPoints = new List<Transform>();
-            foreach (Transform child in _spawnPointsParent)
-            {
-                _spawnPoints.Add(child);
             }
 
             ResetEnvironment();
+            if (_battleRoyaleZone != null)
+            {
+                _battleRoyaleZone.InitializeZone(healthList);
+            }
         }
 
         private void OnDestroy()
@@ -57,16 +55,17 @@ namespace MachineLearningFPS.Environment
                     if (agent.TryGetComponent(out Health health))
                     {
                         health.OnDeath -= HandleAgentDeath;
+                        health.OnDamageTaken -= HandleAgentDamage;
                     }
                 }
             }
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
-            _currentEpisodeTime += Time.deltaTime;
+            _currentEpisodeSteps++;
 
-            if (_currentEpisodeTime >= _maxEpisodeLength)
+            if (_currentEpisodeSteps >= _maxEpisodeSteps)
             {
                 _timeUp = true;
                 ResetEpisode();
@@ -91,9 +90,22 @@ namespace MachineLearningFPS.Environment
             ResetEpisode();
         }
 
+        private void HandleAgentDamage(GameObject victim, GameObject attacker, float amount)
+        {
+            if (attacker != null && attacker.TryGetComponent(out MLController attackerML))
+            {
+                attackerML.AddReward(amount * _curriculum.DealingDamageRewardScale);
+            }
+
+            if (victim != null && victim.TryGetComponent(out MLController victimML))
+            {
+                victimML.AddReward(-amount * _curriculum.TakingDamagePenaltyScale);
+            }
+        }
+
         private void ResetEpisode()
         {
-            _currentEpisodeTime = 0f;
+            _currentEpisodeSteps = 0;
 
             foreach (var agent in _agents)
             {
@@ -101,11 +113,14 @@ namespace MachineLearningFPS.Environment
                 {
                     agent.AddReward(_curriculum.TrucePenaltyAmount);
                 }
+                float episodeReward = agent.GetCumulativeReward();
+                OnAgentEpisodeEnd?.Invoke(episodeReward);
                 agent.EndEpisode();
             }
 
             _timeUp = false;
             ResetEnvironment();
+
             OnEpisodeReset?.Invoke();
         }
 
@@ -116,89 +131,23 @@ namespace MachineLearningFPS.Environment
                 if (agent.TryGetComponent(out Health health)) health.ResetHealth();
                 if (agent.TryGetComponent(out FPSMovement movement)) movement.ResetMovement();
             }
-            if (_usePredifinedSpawnPoints)
+
+            if (_arenaController != null)
             {
-                PreidentifiedSpawnReset();
+                _arenaController.ResetArena(_agents);
             }
             else
             {
-                RandomSpawnReset();
+                Debug.LogWarning("[EpisodeController] ArenaController is not assigned.");
             }
-        }
-        private void PreidentifiedSpawnReset()
-        {
-            List<Transform> availableSpawns = new(_spawnPoints);
-            foreach (var agent in _agents)
-            {
-                if (availableSpawns.Count > 0)
-                {
-                    int randomIndex = UnityEngine.Random.Range(0, availableSpawns.Count);
-                    Transform spawn = availableSpawns[randomIndex];
-                    availableSpawns.RemoveAt(randomIndex);
 
-                    if (agent.TryGetComponent<CharacterController>(out var cc)) cc.enabled = false;
-                    agent.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
-                    if (cc != null) cc.enabled = true;
-                }
-                if (_applyStartingRotationRandomization)
-                {
-                    agent.transform.rotation = Quaternion.Euler(0, agent.transform.rotation.eulerAngles.y + UnityEngine.Random.Range(-45f, 45f), 0);
-                }
+            if (_battleRoyaleZone != null)
+            {
+                _battleRoyaleZone.ResetZone();
             }
-        }
-        private void RandomSpawnReset()
-        {
-            const int MAX_SPAWN_ATTEMPTS = 30;
-            const float MIN_SPAWN_DISTANCE = 1.0f;
-            List<Vector3> usedPositions = new List<Vector3>();
-
-            foreach (var agent in _agents)
+            else
             {
-                Vector3 worldSpawnPosition = transform.position;
-                bool foundValidPosition = false;
-
-                for (int i = 0; i < MAX_SPAWN_ATTEMPTS; i++)
-                {
-                    Vector3 localOffset = new Vector3(
-                        UnityEngine.Random.Range(_levelBounds.MinX, _levelBounds.MaxX),
-                        1f,
-                        UnityEngine.Random.Range(_levelBounds.MinZ, _levelBounds.MaxZ)
-                    );
-
-                    Vector3 potentialPosition = transform.TransformPoint(localOffset);
-
-                    bool isPositionClear = true;
-                    foreach (var usedPos in usedPositions)
-                    {
-                        if (Vector3.Distance(potentialPosition, usedPos) < MIN_SPAWN_DISTANCE)
-                        {
-                            isPositionClear = false;
-                            break;
-                        }
-                    }
-
-                    if (isPositionClear)
-                    {
-                        worldSpawnPosition = potentialPosition;
-                        usedPositions.Add(worldSpawnPosition);
-                        foundValidPosition = true;
-                        break;
-                    }
-                }
-
-                if (!foundValidPosition)
-                {
-                    Debug.LogWarning($"[EpisodeController] Could not find a clear spawn point for {agent.gameObject.name} after {MAX_SPAWN_ATTEMPTS} attempts.");
-                }
-
-                if (agent.TryGetComponent<CharacterController>(out var cc)) cc.enabled = false;
-                agent.transform.position = worldSpawnPosition;
-                if (cc != null) cc.enabled = true;
-
-                if (_applyStartingRotationRandomization)
-                {
-                    agent.transform.rotation = transform.rotation * Quaternion.Euler(0, UnityEngine.Random.Range(0f, 360f), 0);
-                }
+                Debug.LogWarning("[EpisodeController] BattleRoyaleZone is not assigned.");
             }
         }
     }
