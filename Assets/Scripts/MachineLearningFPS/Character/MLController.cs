@@ -17,32 +17,31 @@ namespace MachineLearningFPS.Character
     {
         [Header("Episode Controller Reference")]
         [SerializeField] private EpisodeController _episodeController;
-        private bool _firstSightRewardGiven = false;
+        public EpisodeController ActiveEpisodeController => _episodeController;
 
         [Header("Agent Look Settings")]
         [SerializeField] private float _agentLookSensitivity = 1f;
         [SerializeField] private int _teamID = 0;
         public int TeamID => _teamID;
 
+        [Header("References")]
         private Health _health;
         private FPSMovement _movementBody;
         private CharacterController _characterController;
         private WeaponController _weaponController;
         private IInputProvider _inputProvider;
+        private MLRewardManager _rewardManager;
         public WeaponController Weapon => _weaponController;
 
-        private bool _isSensorDataStale = false;
+        [Header("Actions")]
         private Vector2 _currentAgentMoveInput;
         private Vector2 _targetAgentLookInput;
         private bool _currentAgentJump;
         private bool _currentAgentCrouch;
 
-
-        private Vector3 _lastKnownEnemyLocalDir = Vector3.zero;
-        private float _timeSinceEnemySeen = 999f;
-
-        public Vector3 LastKnownEnemyLocalDir => _lastKnownEnemyLocalDir;
-        public float TimeSinceEnemySeen => _timeSinceEnemySeen;
+        public bool IsSensorDataStale { get; private set; } = false;
+        public Vector3 LastKnownEnemyLocalDir => _rewardManager != null ? _rewardManager.LastKnownEnemyLocalDir : Vector3.zero;
+        public float TimeSinceEnemySeen => _rewardManager != null ? _rewardManager.TimeSinceEnemySeen : 999f;
         public Health AgentHealth => _health;
 
         public event Action OnEpisodeEnded;
@@ -57,23 +56,20 @@ namespace MachineLearningFPS.Character
             _weaponController = GetComponentInChildren<WeaponController>();
             _inputProvider = GetComponent<IInputProvider>();
             _health = GetComponent<Health>();
+            _rewardManager = GetComponent<MLRewardManager>();
             _weaponController.SetAimTransform(_movementBody.HeadTransform);
         }
 
         public override void OnEpisodeBegin()
         {
             OnEpisodeEnded?.Invoke();
-            _firstSightRewardGiven = false;
-            _isSensorDataStale = true;
-            _lastKnownEnemyLocalDir = Vector3.zero;
-            _timeSinceEnemySeen = 999f;
+            IsSensorDataStale = true;
             base.OnEpisodeBegin();
         }
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            _isSensorDataStale = false;
-
+            IsSensorDataStale = false;
 
             // Own local velocity (3 floats)
             Vector3 localVelocity = transform.InverseTransformDirection(_characterController.velocity);
@@ -108,10 +104,10 @@ namespace MachineLearningFPS.Character
             sensor.AddObservation(normHealth);
 
             // Last known enemy direction in LOCAL space (3 floats)
-            sensor.AddObservation(_lastKnownEnemyLocalDir);
+            sensor.AddObservation(LastKnownEnemyLocalDir);
 
             // Time since enemy last seen, normalised 0-1 (1 float)
-            sensor.AddObservation(Mathf.Clamp01(_timeSinceEnemySeen / 5f));
+            sensor.AddObservation(Mathf.Clamp01(TimeSinceEnemySeen / 5f));
         }
 
         public override void OnActionReceived(ActionBuffers actions)
@@ -139,14 +135,6 @@ namespace MachineLearningFPS.Character
                 if (_weaponController.Shoot())
                 {
                     OnAgentShot?.Invoke();
-
-                    bool enemyHit = IsEnemyHitByRaycast();
-
-                    if (_episodeController == null) return;
-                    if (enemyHit && _episodeController.Curriculum.EnableGoodShootReward)
-                        AddReward(_episodeController.Curriculum.RewardForGoodShoot);
-                    else if (!enemyHit && _episodeController.Curriculum.EnableBadShootPenalty)
-                        AddReward(_episodeController.Curriculum.PenaltyForBadShoot);
                 }
             }
 
@@ -168,202 +156,6 @@ namespace MachineLearningFPS.Character
                     _currentAgentJump,
                     _currentAgentCrouch);
                 _currentAgentJump = false;
-            }
-
-            if (!_isSensorDataStale)
-                CalculateEnvironmentRewards();
-        }
-
-        private void CalculateEnvironmentRewards()
-        {
-            if (_episodeController == null) return;
-
-            Vector3 enemyWorldDir;
-            bool enemyInSight = IsEnemyInSightWithDirection(_episodeController.Curriculum.AimingConeAngle, out enemyWorldDir);
-
-            if (enemyInSight)
-            {
-                _lastKnownEnemyLocalDir = transform.InverseTransformDirection(enemyWorldDir);
-                _timeSinceEnemySeen = 0f;
-
-                if (_episodeController.Curriculum.EnableFirstSightReward && !_firstSightRewardGiven)
-                {
-                    AddReward(_episodeController.Curriculum.RewardForFirstSight);
-                    _firstSightRewardGiven = true;
-                }
-
-                if (_episodeController.Curriculum.EnableLookingAtEnemyReward)
-                    AddReward(_episodeController.Curriculum.RewardForLookingAtEnemy * Time.deltaTime);
-
-                if (_episodeController.Curriculum.EnableApproachReward)
-                {
-                    ApplyApproachReward();
-                }
-
-                if (_episodeController.Curriculum.EnableAimingQualityReward)
-                {
-                    ApplyAimingReward(enemyWorldDir);
-                }
-            }
-            else
-            {
-                _timeSinceEnemySeen += Time.deltaTime;
-            }
-
-            ApplyContinuousRewards();
-        }
-
-        private void ApplyApproachReward()
-        {
-            int playerMask = LayerMask.GetMask("Player");
-            Collider[] nearby = Physics.OverlapSphere(
-                transform.position, 50f, playerMask);
-
-            foreach (var col in nearby)
-            {
-                if (col.gameObject == gameObject) continue;
-
-                float distance = Vector3.Distance(transform.position, col.transform.position);
-
-
-                if (distance > _episodeController.Curriculum.ApproachRewardMinDistance && distance < _episodeController.Curriculum.ApproachRewardMaxDistance)
-                {
-                    float normalizedDistance = 1f - (distance / _episodeController.Curriculum.ApproachRewardMaxDistance);
-                    float approachReward = normalizedDistance * _episodeController.Curriculum.ApproachRewardScale * 0.001f;
-                    AddReward(approachReward * Time.deltaTime);
-                }
-                break;
-            }
-        }
-
-        private void ApplyAimingReward(Vector3 enemyWorldDir)
-        {
-            float dot = Vector3.Dot(_movementBody.HeadTransform.forward, enemyWorldDir);
-            float coneEdge = Mathf.Cos(_episodeController.Curriculum.AimingConeAngle * Mathf.Deg2Rad);
-
-
-            float aimQuality = Mathf.InverseLerp(coneEdge, 1f, dot);
-
-            AddReward(aimQuality * _episodeController.Curriculum.AimingQualityRewardScale * Time.deltaTime);
-        }
-
-        private void ApplyContinuousRewards()
-        {
-            if (_episodeController == null) return;
-
-            if (_episodeController.Curriculum.EnableExistancePenalty)
-                AddReward(_episodeController.Curriculum.ExistancePenaltyAmount * Time.deltaTime);
-
-            if (_episodeController.Curriculum.EnableContactPenalty)
-                ApplyProximityContactPenalty();
-        }
-
-
-        private void ApplyProximityContactPenalty()
-        {
-            int playerLayerMask = LayerMask.GetMask("Player");
-            Collider[] hits = Physics.OverlapSphere(
-                transform.position, _episodeController.Curriculum.ContactDetectionRadius, playerLayerMask);
-            foreach (Collider hit in hits)
-            {
-                if (hit.gameObject != gameObject)
-                {
-                    AddReward(_episodeController.Curriculum.ContactPenaltyAmount * Time.deltaTime);
-                    break;
-                }
-            }
-        }
-
-
-        private bool IsEnemyInSight(float coneAngleDeg)
-        {
-            return IsEnemyInSightWithDirection(coneAngleDeg, out _);
-        }
-
-        private bool IsEnemyHitByRaycast()
-        {
-            if (_movementBody == null || _weaponController == null) return false;
-
-            float rayDistance = _weaponController.CurrentWeaponRange;
-            int layerMask = LayerMask.GetMask("Player", "Default");
-
-            if (Physics.Raycast(_movementBody.HeadTransform.position, _movementBody.HeadTransform.forward, out RaycastHit hit, rayDistance, layerMask))
-            {
-                return hit.collider.CompareTag("Player") && hit.collider.gameObject != gameObject;
-            }
-
-            return false;
-        }
-
-        private bool IsEnemyInSightWithDirection(float coneAngleDeg, out Vector3 dirToEnemy)
-        {
-            dirToEnemy = Vector3.zero;
-            if (_movementBody == null) return false;
-
-            float rayDistance = _weaponController != null ?
-                                _weaponController.CurrentWeaponRange : 0f;
-            int playerMask = LayerMask.GetMask("Player");
-            int layerMask = LayerMask.GetMask("Player", "Default");
-
-            Collider[] nearby = Physics.OverlapSphere(
-                _movementBody.HeadTransform.position, rayDistance, playerMask);
-
-            foreach (var col in nearby)
-            {
-                if (col.gameObject == gameObject) continue;
-
-                Vector3 targetPoint = col.bounds.center;
-                MLController enemyAgent = col.GetComponentInParent<MLController>();
-                if (enemyAgent != null)
-                {
-                    FPSMovement enemyMovement = enemyAgent.GetComponent<FPSMovement>();
-                    if (enemyMovement != null && enemyMovement.HeadTransform != null)
-                        targetPoint = enemyMovement.HeadTransform.position;
-                }
-
-                Vector3 dir = (targetPoint - _movementBody.HeadTransform.position).normalized;
-                float angle = Vector3.Angle(_movementBody.HeadTransform.forward, dir);
-
-                if (angle >= coneAngleDeg) continue;
-
-                if (Physics.Raycast(_movementBody.HeadTransform.position, dir,
-                    out RaycastHit hit, rayDistance, layerMask))
-                {
-                    if (hit.collider.CompareTag("Player") &&
-                        hit.collider.gameObject != gameObject)
-                    {
-                        dirToEnemy = dir;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public void ApplyKillReward()
-        {
-            if (_episodeController != null && _episodeController.Curriculum.EnableKillReward)
-                AddReward(_episodeController.Curriculum.KillRewardAmount);
-            OnAgentKilledEnemy?.Invoke();
-        }
-
-        public void ApplyDeathPenalty()
-        {
-            if (_episodeController != null && _episodeController.Curriculum.EnableDeathPenalty)
-                AddReward(_episodeController.Curriculum.DeathPenaltyAmount);
-            OnAgentDied?.Invoke();
-        }
-
-        private void OnControllerColliderHit(ControllerColliderHit hit)
-        {
-            if (_episodeController == null) return;
-            if (_episodeController.Curriculum.EnableWallHitPenalty)
-            {
-                if (hit.gameObject.CompareTag("Obstacle") &&
-                    Mathf.Abs(hit.normal.y) < 0.2f)
-                {
-                    AddReward(_episodeController.Curriculum.PenaltyForWallHit * Time.deltaTime);
-                }
             }
         }
 
@@ -422,5 +214,11 @@ namespace MachineLearningFPS.Character
                     actionMask.SetActionEnabled(3, i, false);
             }
         }
+
+        public void ApplyKillReward() => _rewardManager?.ApplyKillReward();
+        public void ApplyDeathPenalty() => _rewardManager?.ApplyDeathPenalty();
+        public void ApplyTriggerReward(float rewardScale) => _rewardManager?.ApplyTriggerReward(rewardScale);
+        internal void NotifyAgentKilledEnemy() => OnAgentKilledEnemy?.Invoke();
+        internal void NotifyAgentDied() => OnAgentDied?.Invoke();
     }
 }

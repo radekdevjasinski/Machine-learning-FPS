@@ -110,13 +110,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FPSMovement
   _moveSpeed: 5
   _jumpHeight: 1.5
-  _jumpCooldown: 1
+  _jumpCooldown: 2
   _backwardSpeedMultiplier: 0.5
   _strafeSpeedMultiplier: 0.7
   _crouchHeight: 1
   _crouchSpeedMultiplier: 0.5
   _crouchTransitionSpeed: 10
   _crouchHeadY: 0
+  _crouchCooldown: 0.5
   _lookSpeed: 0.1
   _maxLookAngle: 30
   _headTransform: {fileID: 9182917590051691424}

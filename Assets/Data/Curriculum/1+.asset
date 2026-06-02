@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c581d4999a671af4d86c8d688e1ef51b, type: 3}
   m_Name: 1+
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Character.MLCurriculumSettings
-  EnableJumping: 0
-  EnableCrouching: 0
+  EnableJumping: 1
+  EnableCrouching: 1
   EnableVerticalLooking: 0
   EnableWeaponSwapping: 0
   EnableFirstSightReward: 0

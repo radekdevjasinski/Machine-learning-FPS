@@ -18,6 +18,7 @@ namespace MachineLearningFPS.Character
         [SerializeField] private float _crouchSpeedMultiplier = 0.5f;
         [SerializeField] private float _crouchTransitionSpeed = 10f;
         [SerializeField] private float _crouchHeadY = 0.3f;
+        [SerializeField] private float _crouchCooldown = 0.3f;
 
         [Header("Look Settings")]
         [SerializeField] private float _lookSpeed = .1f;
@@ -44,6 +45,11 @@ namespace MachineLearningFPS.Character
         public Transform HeadTransform => _headTransform;
 
         private float _nextJumpTime = 0f;
+        private float _nextCrouchTime = 0f;
+
+        private bool _isCrouching = false;
+        private bool _wantsToCrouch = false;
+        private bool _wasCrouchInput = false;
 
         void Start()
         {
@@ -74,6 +80,13 @@ namespace MachineLearningFPS.Character
             _currentCrouchInput = false;
             _xRotation = 0f;
             _headTransform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+
+            _isCrouching = false;
+            _wantsToCrouch = false;
+            _wasCrouchInput = false;
+
+            _nextJumpTime = 0f;
+            _nextCrouchTime = 0f;
         }
 
         void Update()
@@ -88,8 +101,18 @@ namespace MachineLearningFPS.Character
             _currentLookInput = Vector2.zero;
 
             // --- 2. KUCANIE (Logika fizyczna) ---
-            float targetHeight = _currentCrouchInput ? _crouchHeight : _standingHeight;
-            float currentSpeed = _currentCrouchInput ? _moveSpeed * _crouchSpeedMultiplier : _moveSpeed;
+            if (_currentCrouchInput && !_wasCrouchInput && Time.time >= _nextCrouchTime)
+            {
+                _wantsToCrouch = !_wantsToCrouch;
+                _nextCrouchTime = Time.time + _crouchCooldown;
+            }
+            _wasCrouchInput = _currentCrouchInput;
+
+            bool blocked = !_wantsToCrouch && _isCrouching && !CanStandUp();
+            _isCrouching = _wantsToCrouch || blocked;
+
+            float targetHeight = _isCrouching ? _crouchHeight : _standingHeight;
+            float currentSpeed = _isCrouching ? _moveSpeed * _crouchSpeedMultiplier : _moveSpeed;
 
             _controller.height = Mathf.Lerp(_controller.height, targetHeight, Time.deltaTime * _crouchTransitionSpeed);
 
@@ -98,7 +121,7 @@ namespace MachineLearningFPS.Character
 
             if (_headTransform != null)
             {
-                float targetHeadY = _currentCrouchInput ? _crouchHeadY : _standingHeadY;
+                float targetHeadY = _isCrouching ? _crouchHeadY : _standingHeadY;
                 Vector3 headPos = _headTransform.localPosition;
                 headPos.y = Mathf.Lerp(headPos.y, targetHeadY, Time.deltaTime * _crouchTransitionSpeed);
                 _headTransform.localPosition = headPos;
@@ -110,7 +133,7 @@ namespace MachineLearningFPS.Character
                 _velocity.y = -2f;
             }
 
-            if (_currentJumpInput && _controller.isGrounded && !_currentCrouchInput && Time.time >= _nextJumpTime)
+            if (_currentJumpInput && _controller.isGrounded && !_isCrouching && Time.time >= _nextJumpTime)
             {
                 _velocity.y = Mathf.Sqrt(_jumpHeight * -2f * GRAVITY);
                 _nextJumpTime = Time.time + _jumpCooldown;
@@ -135,6 +158,15 @@ namespace MachineLearningFPS.Character
 
             _controller.Move(finalMovement * Time.deltaTime);
         }
+        private bool CanStandUp()
+        {
+            float checkRadius = _controller.radius * 0.9f;
+            Vector3 p1 = transform.TransformPoint(_controller.center + Vector3.up * (_controller.height / 2f - checkRadius));
+            Vector3 p2 = transform.TransformPoint(new Vector3(0, _standingCenterY + (_standingHeight / 2f) - checkRadius, 0));
 
+            int layerMask = ~LayerMask.GetMask("Player"); // Ignore players, check against everything else
+
+            return !Physics.CheckCapsule(p1, p2, checkRadius, layerMask, QueryTriggerInteraction.Ignore);
+        }
     }
 }
