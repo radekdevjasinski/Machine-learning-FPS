@@ -15,6 +15,7 @@ namespace MachineLearningFPS.Environment
 
         private bool _hasTriggered = false;
         private MeshRenderer _renderer;
+
         void Awake()
         {
             _renderer = GetComponent<MeshRenderer>();
@@ -34,7 +35,8 @@ namespace MachineLearningFPS.Environment
                     if (_triggerOnce)
                     {
                         _hasTriggered = true;
-                        _renderer.enabled = false;
+                        if (_renderer != null)
+                            _renderer.enabled = false;
                     }
                 }
             }
@@ -44,7 +46,8 @@ namespace MachineLearningFPS.Environment
         public void ResetTrigger()
         {
             _hasTriggered = false;
-            _renderer.enabled = true;
+            if (_renderer != null)
+                _renderer.enabled = true;
         }
     }
 }

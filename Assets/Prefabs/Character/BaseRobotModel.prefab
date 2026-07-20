@@ -315,6 +315,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialNameToModify: M_AtlasOffset
   materialToModify: {fileID: 2100000, guid: b155bbc5f87677d47a8fcce7466463d3, type: 2}
+  colorAtlasTexture: {fileID: 2800000, guid: 270ff6e62b9d9124a80636ce8a7cfc1e, type: 3}
 --- !u!1 &3631620796558273419
 GameObject:
   m_ObjectHideFlags: 0

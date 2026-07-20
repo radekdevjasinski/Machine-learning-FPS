@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/curriculum1.unity
+    path: Assets/Scenes/old/curriculum1.unity
     guid: 9b36379af81c06842bb212a40bafe9f0
   - enabled: 0
     path: Assets/Scenes/old/0 training.unity
@@ -23,9 +23,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/old/2 training.unity
     guid: 6c859fa4133fe744bb2da6d2cf0657e9
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/2 training.unity
     guid: 1df5cb440732fc34d9e1a9e0d8599fab
+  - enabled: 1
+    path: Assets/Scenes/cl2 training.unity
+    guid: ce3165c8e375b1941955fa95a83ed83d
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

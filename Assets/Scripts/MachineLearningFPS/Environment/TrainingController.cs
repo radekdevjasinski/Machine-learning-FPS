@@ -13,6 +13,7 @@ namespace MachineLearningFPS.Environment
         private float _timer;
 
 
+
         private void Awake()
         {
             _episodeControllers = FindObjectsByType<EpisodeController>();

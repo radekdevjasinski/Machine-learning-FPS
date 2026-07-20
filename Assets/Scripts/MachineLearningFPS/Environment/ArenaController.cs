@@ -9,12 +9,13 @@ namespace MachineLearningFPS.Environment
     {
         [Header("Arena Settings")]
         [SerializeField] private Transform _spawnPointsParent;
-        [SerializeField] private Transform _movingObstaclesParent;
         [SerializeField] private Transform _rewardTriggersParent;
         [SerializeField] private bool _applyStartingRotationRandomization = true;
         [SerializeField] private bool _usePredifinedSpawnPoints = true;
-        [SerializeField] private bool _obstacleMovementEnabled = true;
         [SerializeField] private bool _agentsSpawnOffsetEnabled = true;
+
+        [Header("Obstacle Controller")]
+        [SerializeField] private ObstacleController _obstacleController;
 
 
 
@@ -40,9 +41,17 @@ namespace MachineLearningFPS.Environment
             }
             if (_rewardTriggersParent != null)
             {
+                GetRewardTriggers();
+            }
+        }
+        private void GetRewardTriggers()
+        {
+            _rewardTriggers.Clear();
+            if (_rewardTriggersParent != null)
+            {
                 foreach (Transform child in _rewardTriggersParent)
                 {
-                    EnvironmentRewardTrigger rewardTrigger = child.GetComponent<EnvironmentRewardTrigger>();
+                    EnvironmentRewardTrigger rewardTrigger = child.GetComponentInChildren<EnvironmentRewardTrigger>();
                     if (rewardTrigger != null)
                     {
                         _rewardTriggers.Add(rewardTrigger);
@@ -61,10 +70,25 @@ namespace MachineLearningFPS.Environment
             {
                 RandomSpawnReset(agents);
             }
-            if (_obstacleMovementEnabled)
+
+            if (_obstacleController != null)
             {
-                MoveArenaObstacles();
+                _obstacleController.ResetObstacles();
             }
+
+            if (_rewardTriggersParent != null)
+            {
+                GetRewardTriggers();
+            }
+
+            foreach (var trigger in _rewardTriggers)
+            {
+                trigger.ResetTrigger();
+            }
+        }
+
+        public void ResetTriggers()
+        {
             foreach (var trigger in _rewardTriggers)
             {
                 trigger.ResetTrigger();
@@ -150,16 +174,6 @@ namespace MachineLearningFPS.Environment
                 {
                     agent.transform.rotation = transform.rotation * Quaternion.Euler(0, UnityEngine.Random.Range(0f, 360f), 0);
                 }
-            }
-        }
-        private void MoveArenaObstacles()
-        {
-            if (_movingObstaclesParent == null) return;
-
-            foreach (Transform obstacle in _movingObstaclesParent)
-            {
-                float newX = UnityEngine.Random.Range(_levelBounds.MinX, _levelBounds.MaxX);
-                obstacle.localPosition = new Vector3(newX, obstacle.position.y, obstacle.position.z);
             }
         }
         private void MoveAgents(Transform agent)

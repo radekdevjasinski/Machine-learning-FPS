@@ -13,6 +13,7 @@ namespace MachineLearningFPS.WeaponSystem
         [SerializeField] private float _laserDuration = 0.05f;
         [SerializeField] private float _fadeDuration = 0.01f;
         [SerializeField] private float _laserCastRadius = 0.25f;
+        [SerializeField] private GameObject _hitParticle;
         public int WeaponCount => weapons.Count;
 
         private Weapon _currentWeapon;
@@ -22,6 +23,7 @@ namespace MachineLearningFPS.WeaponSystem
         private float _lastFireTime;
         private Transform _aimTransform;
         private RaycastHit[] _hitBuffer = new RaycastHit[32];
+        private CharacterController _characterController;
 
         private void Awake()
         {
@@ -38,6 +40,7 @@ namespace MachineLearningFPS.WeaponSystem
             {
                 EquipWeapon(startingWeaponIndex);
             }
+            _characterController = GetComponentInParent<CharacterController>();
         }
 
         public void SetAimTransform(Transform aimTransform)
@@ -104,10 +107,16 @@ namespace MachineLearningFPS.WeaponSystem
             for (int i = 0; i < stats.ProjectileCount; i++)
             {
                 Vector3 direction = _aimTransform.forward;
+                float currentSpread = stats.Spread;
 
-                if (stats.Spread > 0)
+                if (_characterController != null && !_characterController.isGrounded)
                 {
-                    Vector2 randomCircle = Random.insideUnitCircle * stats.Spread;
+                    currentSpread += stats.Recoil;
+                }
+
+                if (currentSpread > 0)
+                {
+                    Vector2 randomCircle = Random.insideUnitCircle * currentSpread;
                     Quaternion spreadRotation = Quaternion.Euler(randomCircle.y, randomCircle.x, 0);
                     direction = spreadRotation * direction;
                 }
@@ -149,8 +158,23 @@ namespace MachineLearningFPS.WeaponSystem
                             closestHealth.TakeDamage(stats.Damage, thisHealth);
                         }
                     }
-                }
+                    if (_hitParticle != null)
+                    {
+                        GameObject particle = Instantiate(_hitParticle);
+                        particle.transform.position = endPoint;
+                        if (particle.TryGetComponent(out ParticleSystem ps))
+                        {
+                            var main = ps.main;
+                            if (closestHealth != null)
+                            {
+                                main.startColor = Color.red;
 
+                            }
+                            ps.Play();
+                            Destroy(particle, main.duration);
+                        }
+                    }
+                }
                 StartCoroutine(RenderTraceCoroutine(endPoint, _currentWeapon.LineRendererPrefab));
             }
         }

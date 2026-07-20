@@ -282,7 +282,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2346319912150806622, guid: 911006d1501b8b04c9e46b95268dd469, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.00000003259629
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -377,7 +377,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a127655db87a04f4b9b448ff94231898, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Character.MLRewardManager
-  _raySensor: {fileID: 8394258522805554093}
+  _sensorParent: {fileID: 8399339620431137108}
+  _raySensors: []
 --- !u!114 &2532120374239697737
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace MachineLearningFPS.Character
@@ -8,7 +9,7 @@ namespace MachineLearningFPS.Character
         [Header("Movement Settings")]
         [SerializeField] private float _moveSpeed = 5f;
         [SerializeField] private float _jumpHeight = 1.5f;
-        [SerializeField] private float _jumpCooldown = 1f;
+        [SerializeField] private float _jumpCooldown = 5f;
         [SerializeField] private float _backwardSpeedMultiplier = 0.5f;
         [SerializeField] private float _strafeSpeedMultiplier = 0.7f;
         static readonly float GRAVITY = -9.81f;
@@ -18,7 +19,7 @@ namespace MachineLearningFPS.Character
         [SerializeField] private float _crouchSpeedMultiplier = 0.5f;
         [SerializeField] private float _crouchTransitionSpeed = 10f;
         [SerializeField] private float _crouchHeadY = 0.3f;
-        [SerializeField] private float _crouchCooldown = 0.3f;
+        [SerializeField] private float _crouchCooldown = 2.5f;
 
         [Header("Look Settings")]
         [SerializeField] private float _lookSpeed = .1f;
@@ -46,6 +47,10 @@ namespace MachineLearningFPS.Character
 
         private float _nextJumpTime = 0f;
         private float _nextCrouchTime = 0f;
+
+
+        public event Action JumpPerformed;
+        public event Action CrouchPerformed;
 
         private bool _isCrouching = false;
         private bool _wantsToCrouch = false;
@@ -105,6 +110,7 @@ namespace MachineLearningFPS.Character
             {
                 _wantsToCrouch = !_wantsToCrouch;
                 _nextCrouchTime = Time.time + _crouchCooldown;
+                CrouchPerformed?.Invoke();
             }
             _wasCrouchInput = _currentCrouchInput;
 
@@ -137,6 +143,7 @@ namespace MachineLearningFPS.Character
             {
                 _velocity.y = Mathf.Sqrt(_jumpHeight * -2f * GRAVITY);
                 _nextJumpTime = Time.time + _jumpCooldown;
+                JumpPerformed?.Invoke();
             }
 
             _currentJumpInput = false;

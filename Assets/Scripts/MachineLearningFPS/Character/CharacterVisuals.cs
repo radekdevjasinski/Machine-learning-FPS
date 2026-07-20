@@ -67,6 +67,7 @@ namespace MachineLearningFPS.Character
             bool isCrouching = controller.height <= _heightToCrouchThreshold;
             float targetY = isCrouching ? _defaultLocalY + _crouchYOffset : _defaultLocalY;
 
+
             Vector3 currentLocalPos = transform.localPosition;
             currentLocalPos.y = Mathf.Lerp(currentLocalPos.y, targetY, Time.deltaTime * _crouchTransitionSpeed);
             transform.localPosition = currentLocalPos;

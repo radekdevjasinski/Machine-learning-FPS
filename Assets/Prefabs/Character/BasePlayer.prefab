@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 6922773516535115308}
   - component: {fileID: 1761021163677879811}
   - component: {fileID: 1080142176403789829}
+  - component: {fileID: 5062761294187552254}
   m_Layer: 7
   m_Name: BasePlayer
   m_TagString: Player
@@ -110,14 +111,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FPSMovement
   _moveSpeed: 5
   _jumpHeight: 1.5
-  _jumpCooldown: 2
+  _jumpCooldown: 5
   _backwardSpeedMultiplier: 0.5
   _strafeSpeedMultiplier: 0.7
   _crouchHeight: 1
   _crouchSpeedMultiplier: 0.5
   _crouchTransitionSpeed: 10
   _crouchHeadY: 0
-  _crouchCooldown: 0.5
+  _crouchCooldown: 2.5
   _lookSpeed: 0.1
   _maxLookAngle: 30
   _headTransform: {fileID: 9182917590051691424}
@@ -164,6 +165,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Character.MovementToUI
   characterController: {fileID: 7591315842622546528}
   targetHead: {fileID: 9182917590051691424}
+--- !u!114 &5062761294187552254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1627329712990726569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc1a43d13243e87498360d4c438ed0ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterColor
+  _robotColorScript: {fileID: 5261772563760879615}
+  _adjustment: {x: 0.05, y: -0.05}
 --- !u!1 &2009292641244613646
 GameObject:
   m_ObjectHideFlags: 0
@@ -822,6 +837,7 @@ MonoBehaviour:
   _laserDuration: 0.05
   _fadeDuration: 0.01
   _laserCastRadius: 0.25
+  _hitParticle: {fileID: 2707559476452583554, guid: 0e6e48f24e9856540aacdabadf397f97, type: 3}
 --- !u!1 &8086423531757231135
 GameObject:
   m_ObjectHideFlags: 0
@@ -1549,6 +1565,17 @@ MonoBehaviour:
   _hunchTransitionSpeed: 10
   _legsRig: {fileID: 7097879828726717755}
   _legsRigMaxWeight: 0.75
+--- !u!114 &5261772563760879615 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2523697088536518644, guid: 5cae6d7d0922fd44e8c052d92fe9a0ce, type: 3}
+  m_PrefabInstance: {fileID: 7638223050717333515}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5027419703357077839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 547a3a5865c201e42b933cbf702a40ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &5660790784364225525 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2634395073816603646, guid: 5cae6d7d0922fd44e8c052d92fe9a0ce, type: 3}

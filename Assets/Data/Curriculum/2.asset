@@ -30,9 +30,9 @@ MonoBehaviour:
   EnableWallHitPenalty: 1
   PenaltyForWallHit: -1
   EnableJumpingPenalty: 1
-  JumpingPenalty: -0.5
+  JumpingPenalty: -1
   EnableCrouchingPenalty: 1
-  CrouchingPenalty: -0.5
+  CrouchingPenalty: -1
   EnableExistancePenalty: 1
   ExistancePenaltyAmount: -0.1
   EnableTrucePenalty: 0
@@ -51,4 +51,4 @@ MonoBehaviour:
   ApproachRewardMaxDistance: 20
   ApproachRewardMinDistance: 3
   EnableTriggerReward: 1
-  TriggerRewardAmount: 5
+  TriggerRewardAmount: 10

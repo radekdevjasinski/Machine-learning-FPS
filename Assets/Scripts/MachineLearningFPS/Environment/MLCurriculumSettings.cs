@@ -26,47 +26,57 @@ namespace MachineLearningFPS.Environment
         public bool EnableAimingQualityReward = false;
         public float AimingQualityRewardScale = 0.15f;
 
-        [Header("Movement Rewards")]
+        [Header("Movement Rewards (per second)")]
         public bool EnableWallHitPenalty = false;
         public float PenaltyForWallHit = -0.25f;
 
-        [Header("Actions Penalties")]
+        [Header("Actions Penalties (per second)")]
+        [Tooltip("Enable a penalty when the agent performs an action. (Blue trigger zone disable this penalty)")]
         public bool EnableJumpingPenalty = false;
-        public float JumpingPenalty = -0.1f;
+        public float JumpingPenalty = -1f;
         public bool EnableCrouchingPenalty = false;
-        public float CrouchingPenalty = -0.1f;
+        public float CrouchingPenalty = -1f;
 
 
-        [Header("Continuous Rewards")]
+        [Header("Continuous Rewards (per second)")]
         public bool EnableExistancePenalty = false;
-        public float ExistancePenaltyAmount = 0.01f;
+        public float ExistancePenaltyAmount = -0.1f;
 
         [Header("Episode Rewards")]
+        [Tooltip("Truce and death penalties.")]
         public bool EnableTrucePenalty = false;
         public float TrucePenaltyAmount = -10f;
         public bool EnableKillReward = true;
-        public float KillRewardAmount = 10f;
+        public float KillRewardAmount = 20f;
         public bool EnableDeathPenalty = false;
-        public float DeathPenaltyAmount = -10f;
+        public float DeathPenaltyAmount = -8f;
+        public bool EnableWonByZoneReward = false;
+        public float WonByZoneRewardAmount = 10f;
 
         [Header("Damage Settings")]
-        public float DealingDamageRewardScale = 1f;
-        public float TakingDamagePenaltyScale = 1f;
+        [Tooltip("Enable a reward when the agent deals damage to the enemy.")]
+        public float DealingDamageRewardScale = 5f;
+        public float TakingDamagePenaltyScale = 2f;
 
         [Header("Contact Settings")]
+        [Tooltip("Enable a penalty when the agent comes into contact with the enemy.")]
         public bool EnableContactPenalty = false;
-        public float ContactPenaltyAmount = -0.05f;
-        public float ContactDetectionRadius = 1f;
+        public float ContactPenaltyAmount = -0.15f;
+        public float ContactDetectionRadius = 2f;
 
-        [Header("Approach Rewards")]
+        [Header("Approach Rewards (per second)")]
+        [Tooltip("Enable a reward when the agent approaches the enemy.")]
         public bool EnableApproachReward = false;
         public float ApproachRewardScale = 20f;
         public float ApproachRewardMaxDistance = 20f;
         public float ApproachRewardMinDistance = 3f;
 
         [Header("Trigger Rewards")]
+        [Tooltip("Enable a reward when the agent enters the green trigger collider. They are placed behind jump and crouch obstacles.")]
         public bool EnableTriggerReward = false;
-        public float TriggerRewardAmount = 5f;
+        public float TriggerRewardAmount = 10f;
+        public float KingOfTheHillRewardAmount = 0.05f;
+        public float BattleRoyalePenaltyAmount = 1f;
 
     }
 }

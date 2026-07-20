@@ -51,7 +51,8 @@ MonoBehaviour:
   _maxEpisodeSteps: 1500
   _arenaController: {fileID: 2152356785479365207}
   _battleRoyaleZone: {fileID: 3886126600072441035}
-  _curriculum: {fileID: 11400000, guid: 4a296fef8e172e7479d454feac43b895, type: 2}
+  _kingOfTheHillZone: {fileID: 5872089769501380741}
+  _curriculum: {fileID: 11400000, guid: ebd838714a7283048b4607583cfee0c3, type: 2}
 --- !u!114 &2152356785479365207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124,7 +125,7 @@ GameObject:
   - component: {fileID: 6746956514189216759}
   - component: {fileID: 1777771208364354396}
   m_Layer: 2
-  m_Name: freeCrouch
+  m_Name: freecrouch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -139,7 +140,7 @@ Transform:
   m_GameObject: {fileID: 229001265365730917}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: -17}
+  m_LocalPosition: {x: 0, y: 2, z: -18.25}
   m_LocalScale: {x: 15, y: 5, z: 15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -235,9 +236,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eec05711bda53334b93bd0e3e5ec6adb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.StanceSafeZoneTrigger
-  _targetTag: Player
-  _allowsFreeJumping: 0
-  _allowsFreeCrouching: 1
 --- !u!1 &399222112301734018
 GameObject:
   m_ObjectHideFlags: 0
@@ -732,7 +730,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 6361
+  m_VersionIndex: 6835
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1088,7 +1086,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 5660
+  m_VersionIndex: 6134
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2121,7 +2119,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3465
+  m_VersionIndex: 3774
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2477,7 +2475,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 6372
+  m_VersionIndex: 6846
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2961,7 +2959,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 6331
+  m_VersionIndex: 6805
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3353,7 +3351,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 8157
+  m_VersionIndex: 8631
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3689,7 +3687,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 12251
+  m_VersionIndex: 12725
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3924,9 +3922,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eec05711bda53334b93bd0e3e5ec6adb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.StanceSafeZoneTrigger
-  _targetTag: Player
-  _allowsFreeJumping: 1
-  _allowsFreeCrouching: 0
 --- !u!1 &7688520037257852419
 GameObject:
   m_ObjectHideFlags: 0
@@ -4562,7 +4557,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 6540
+  m_VersionIndex: 7014
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -4714,9 +4709,9 @@ GameObject:
   - component: {fileID: 8276005900277961567}
   - component: {fileID: 2222775115515226434}
   - component: {fileID: 8582297773010438093}
-  - component: {fileID: 5777212972077123044}
+  - component: {fileID: 5872089769501380741}
   m_Layer: 2
-  m_Name: trigger
+  m_Name: king of the hill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4731,8 +4726,8 @@ Transform:
   m_GameObject: {fileID: 9163197464264308125}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6249999, z: -11.75}
-  m_LocalScale: {x: 15, y: 3.24995, z: 1}
+  m_LocalPosition: {x: 0, y: 2.375, z: 0}
+  m_LocalScale: {x: 15, y: 5, z: 25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4140066107706823803}
@@ -4770,7 +4765,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1491cfcb313d0514a984abcd2e4ba236, type: 2}
+  - {fileID: 2100000, guid: ce0324745c8ecd84187642c682f48f8d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4815,7 +4810,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5777212972077123044
+--- !u!114 &5872089769501380741
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4824,12 +4819,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 9163197464264308125}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9db390bf9935df46bfc5fcf5a1a9761, type: 3}
+  m_Script: {fileID: 11500000, guid: eec05711bda53334b93bd0e3e5ec6adb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.EnvironmentRewardTrigger
-  _targetTag: Player
-  _triggerOnce: 1
-  _rewardScale: 1
+  m_EditorClassIdentifier: Assembly-CSharp::KingOfTheHillZone
 --- !u!1001 &2296609519579498392
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4885,6 +4877,10 @@ PrefabInstance:
     - target: {fileID: 1086772279277073303, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2436769569467232036, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
+      propertyPath: m_Model
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4998,6 +4994,10 @@ PrefabInstance:
     - target: {fileID: 2436769569467232036, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: TeamId
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2436769569467232036, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
+      propertyPath: m_Model
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.x

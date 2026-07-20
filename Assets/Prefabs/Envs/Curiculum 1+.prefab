@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8956825345142730086}
   - component: {fileID: 4333555751957965189}
   - component: {fileID: 2152356785479365207}
+  - component: {fileID: 2778883842349303907}
   m_Layer: 0
   m_Name: EpisodeController
   m_TagString: Untagged
@@ -51,6 +52,7 @@ MonoBehaviour:
   _maxEpisodeSteps: 1500
   _arenaController: {fileID: 2152356785479365207}
   _battleRoyaleZone: {fileID: 3886126600072441035}
+  _kingOfTheHillZone: {fileID: 0}
   _curriculum: {fileID: 11400000, guid: d2d904ed1fe12d24587258272730631b, type: 2}
 --- !u!114 &2152356785479365207
 MonoBehaviour:
@@ -65,16 +67,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.ArenaController
   _spawnPointsParent: {fileID: 4149676637366947454}
-  _movingObstaclesParent: {fileID: 8171241571775603934}
+  _rewardTriggersParent: {fileID: 0}
   _applyStartingRotationRandomization: 1
   _usePredifinedSpawnPoints: 1
-  _obstacleMovementEnabled: 1
   _agentsSpawnOffsetEnabled: 1
+  _obstacleController: {fileID: 2778883842349303907}
   _levelBounds:
     MinX: -6
     MaxX: 6
     MinZ: 0
     MaxZ: 0
+--- !u!114 &2778883842349303907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126438357070209001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe1ab889ee9e4cb4c8327e5e8582736d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.ObstacleController
+  _simpleObstaclesParent: {fileID: 8171241571775603934}
+  _randomObstacleParent: {fileID: 0}
+  _useSimpleObstacles: 1
+  _useRandomObstacleTypes: 0
+  _moveSimpleObstacles: 1
+  _moveRandomObstacles: 0
+  _obstaclePrefabs: []
+  _minX: -6
+  _maxX: 6
+  _minZ: 0
+  _maxZ: 0
 --- !u!1 &222126808558670438
 GameObject:
   m_ObjectHideFlags: 0

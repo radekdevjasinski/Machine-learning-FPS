@@ -11,7 +11,7 @@ namespace MachineLearningFPS.Environment
         [SerializeField] private float _minRadius = 2f;
         [SerializeField] private float _shrinkDuration = 25f;
         [SerializeField] private float _damagePerSecond = 1f;
-        [SerializeField] private bool _damageEnabled = true;
+        [SerializeField] private bool _damageEnabled = false;
         public bool DamageEnabled
         {
             get => _damageEnabled;
@@ -25,8 +25,9 @@ namespace MachineLearningFPS.Environment
         private bool _isActive = false;
         [SerializeField] private List<Health> _agentHealths;
 
-        public void InitializeZone(List<Health> _agentList)
+        public void InitializeZone(List<Health> _agentList, float damagePerSecond)
         {
+            _damagePerSecond = damagePerSecond;
             _agentHealths = _agentList;
             ResetZone();
         }

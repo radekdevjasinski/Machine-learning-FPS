@@ -17,3 +17,4 @@ MonoBehaviour:
   fireRate: 1
   projectileCount: 2
   spread: 0
+  recoil: 5

@@ -58,6 +58,12 @@ namespace MachineLearningFPS.Character
             _health = GetComponent<Health>();
             _rewardManager = GetComponent<MLRewardManager>();
             _weaponController.SetAimTransform(_movementBody.HeadTransform);
+
+            if (_movementBody != null)
+            {
+                _movementBody.JumpPerformed += HandleJumpPerformed;
+                _movementBody.CrouchPerformed += HandleCrouchPerformed;
+            }
         }
 
         public override void OnEpisodeBegin()
@@ -127,6 +133,7 @@ namespace MachineLearningFPS.Character
             bool shoot = actions.DiscreteActions[1] > 0;
             _currentAgentCrouch = actions.DiscreteActions[2] > 0;
 
+
             _currentAgentMoveInput = new Vector2(moveX, moveZ);
             _targetAgentLookInput = new Vector2(lookX, lookY);
 
@@ -158,6 +165,19 @@ namespace MachineLearningFPS.Character
                 _currentAgentJump = false;
             }
         }
+
+        private void OnDestroy()
+        {
+            if (_movementBody != null)
+            {
+                _movementBody.JumpPerformed -= HandleJumpPerformed;
+                _movementBody.CrouchPerformed -= HandleCrouchPerformed;
+            }
+        }
+
+        private void HandleJumpPerformed() => _rewardManager?.ApplyJumpPenalty();
+
+        private void HandleCrouchPerformed() => _rewardManager?.ApplyCrouchingPenalty();
 
         public override void Heuristic(in ActionBuffers actionsOut)
         {
@@ -217,8 +237,13 @@ namespace MachineLearningFPS.Character
 
         public void ApplyKillReward() => _rewardManager?.ApplyKillReward();
         public void ApplyDeathPenalty() => _rewardManager?.ApplyDeathPenalty();
+        public void ApplyKingOfTheHillReward(float rewardScale) => _rewardManager?.ApplyKingOfTheHillReward(rewardScale);
         public void ApplyTriggerReward(float rewardScale) => _rewardManager?.ApplyTriggerReward(rewardScale);
+        public void ApplyWonByZoneReward() => _rewardManager?.ApplyWonByZoneReward();
+
         internal void NotifyAgentKilledEnemy() => OnAgentKilledEnemy?.Invoke();
         internal void NotifyAgentDied() => OnAgentDied?.Invoke();
+        public void UpdateEnemyPositionFromDamage(Vector3 attackerPosition) => _rewardManager?.UpdateEnemyPositionFromDamage(attackerPosition);
+
     }
 }

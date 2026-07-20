@@ -16,10 +16,24 @@ namespace ThirdParty.FreeLowPolyRobot
 
         [SerializeField] private string materialNameToModify = "M_AtlasOffset"; // // Material name
         [SerializeField] private Material materialToModify; // Optional material reference
+        [SerializeField] private Texture2D colorAtlasTexture;
+        private Vector2 _currentOffset;
 
         private void Awake()
         {
             OrganizeRobotParts();
+        }
+        public Color GetCurrentColor(Vector2 adjustment)
+        {
+            if (colorAtlasTexture == null)
+            {
+                Debug.LogError("Brak przypisanej tekstury colorAtlasTexture w ModularRobotRandomizer!");
+                return Color.white;
+            }
+
+            Color pixelColor = colorAtlasTexture.GetPixelBilinear(_currentOffset.x + adjustment.x, _currentOffset.y + adjustment.y);
+
+            return pixelColor;
         }
 
         private void Start()
@@ -46,12 +60,15 @@ namespace ThirdParty.FreeLowPolyRobot
             }
         }
 
-        private void RandomizeMaterialOffsets()
+        public void RandomizeMaterialOffsets()
         {
             float[] possibleValues = { 0f, 0.205078125f, 0.41015625f };
             float randomX = possibleValues[Random.Range(0, possibleValues.Length)];
 
             float randomY = Random.Range(0, 32) * 0.03125f; // Generate values between 0 and 1 on steps of 0.03125
+
+            _currentOffset = new Vector2(randomX, randomY);
+
 
             foreach (GameObject part in activeParts)
             {
@@ -85,6 +102,8 @@ namespace ThirdParty.FreeLowPolyRobot
             }
             return -1; // Material not found
         }
+
     }
+
 }
 

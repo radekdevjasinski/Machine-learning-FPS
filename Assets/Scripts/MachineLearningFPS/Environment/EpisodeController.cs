@@ -16,6 +16,7 @@ namespace MachineLearningFPS.Environment
         [Header("References")]
         [SerializeField] private ArenaController _arenaController;
         [SerializeField] private BattleRoyaleZone _battleRoyaleZone;
+        [SerializeField] private KingOfTheHillZone _kingOfTheHillZone;
 
 
         [Header("Curriculum Settings")]
@@ -42,7 +43,7 @@ namespace MachineLearningFPS.Environment
             ResetEnvironment();
             if (_battleRoyaleZone != null)
             {
-                _battleRoyaleZone.InitializeZone(healthList);
+                _battleRoyaleZone.InitializeZone(healthList, _curriculum.BattleRoyalePenaltyAmount);
             }
         }
 
@@ -81,6 +82,16 @@ namespace MachineLearningFPS.Environment
                 int killerTeam = killerML.TeamID;
                 OnPlayerKilled?.Invoke(killerTeam);
             }
+            else if (victim != null)
+            {
+                foreach (var otherAgent in _agents)
+                {
+                    if (otherAgent != null && otherAgent.gameObject != victim)
+                    {
+                        otherAgent.ApplyWonByZoneReward();
+                    }
+                }
+            }
 
             if (victim != null && victim.TryGetComponent(out MLController victimML))
             {
@@ -100,6 +111,10 @@ namespace MachineLearningFPS.Environment
             if (victim != null && victim.TryGetComponent(out MLController victimML))
             {
                 victimML.AddReward(-amount * _curriculum.TakingDamagePenaltyScale);
+                if (attacker != null)
+                {
+                    victimML.UpdateEnemyPositionFromDamage(attacker.transform.position);
+                }
             }
         }
 
@@ -130,6 +145,7 @@ namespace MachineLearningFPS.Environment
             {
                 if (agent.TryGetComponent(out Health health)) health.ResetHealth();
                 if (agent.TryGetComponent(out FPSMovement movement)) movement.ResetMovement();
+                if (agent.TryGetComponent(out CharacterColor color)) color.RandomizeColor();
             }
 
             if (_arenaController != null)
@@ -148,6 +164,14 @@ namespace MachineLearningFPS.Environment
             else
             {
                 Debug.LogWarning("[EpisodeController] BattleRoyaleZone is not assigned.");
+            }
+            if (_kingOfTheHillZone != null)
+            {
+                _kingOfTheHillZone.ResetZone();
+            }
+            else
+            {
+                //Debug.LogWarning("[EpisodeController] KingOfTheHillZone is not assigned.");
             }
         }
     }

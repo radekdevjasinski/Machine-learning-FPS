@@ -10,12 +10,14 @@ namespace MachineLearningFPS.WeaponSystem
         [SerializeField] private float fireRate = 0.5f;
         [SerializeField] private int projectileCount = 1;
         [SerializeField] private float spread = 0f;
+        [SerializeField] private float recoil = 0f;
 
         public float Damage { get => damage; set => damage = Mathf.Max(0, value); }
         public float Range { get => range; set => range = Mathf.Max(0, value); }
         public float FireRate { get => fireRate; set => fireRate = Mathf.Max(0, value); }
         public int ProjectileCount { get => projectileCount; set => projectileCount = Mathf.Max(1, value); }
         public float Spread { get => spread; set => spread = Mathf.Max(0, value); }
+        public float Recoil { get => recoil; set => recoil = Mathf.Max(0, value); }
     }
 }
 

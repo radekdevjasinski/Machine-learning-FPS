@@ -13,6 +13,10 @@ namespace MachineLearningFPS.UI
     public class UIController : MonoBehaviour
     {
         [SerializeField] private Transform HUDParent;
+        [SerializeField] private Color HUDColor;
+        [SerializeField] private float HUDColorAlpha;
+        private Color spectatorColor = Color.red;
+
         [Header("Shooting UI")]
         [SerializeField] private Slider shootingCooldownSlider;
         [SerializeField] private TMP_Text shootingCooldownText;
@@ -29,6 +33,11 @@ namespace MachineLearningFPS.UI
         [SerializeField] private Transform healthBarParent;
         [SerializeField] private GameObject healthBarPrefab;
         [SerializeField] private int maxHealthBars = 10;
+
+        [Header("Images References")]
+        [SerializeField] private Image[] _hudImages;
+        [SerializeField] private TMP_Text[] _hudTexts;
+
 
         private int _blueTeamScore = 0;
         private int _redTeamScore = 0;
@@ -106,7 +115,8 @@ namespace MachineLearningFPS.UI
 
                 while (healthBarParent.childCount < maxHealthBars)
                 {
-                    Instantiate(healthBarPrefab, healthBarParent);
+                    GameObject healthBar = Instantiate(healthBarPrefab, healthBarParent);
+                    healthBar.GetComponent<Image>().color = new Color(HUDColor.r, HUDColor.g, HUDColor.b, HUDColorAlpha);
                 }
 
                 for (int i = 0; i < healthBarParent.childCount; i++)
@@ -121,6 +131,7 @@ namespace MachineLearningFPS.UI
             {
                 UpdateShootingCooldown(_activeWeaponController.ShootReadinessPercentage);
             }
+
         }
 
         private void HandleActiveTargetChanged(Transform activeTarget)
@@ -136,11 +147,20 @@ namespace MachineLearningFPS.UI
                 UpdateShootingCooldown(_activeWeaponController != null ? _activeWeaponController.ShootReadinessPercentage : 0f);
                 UpdateMovementState(activeTarget, "Idle");
                 if (_activeHealth != null) UpdateHealthBar(_activeHealth.transform);
+                CharacterColor targetCharacterColor = activeTarget.GetComponentInParent<CharacterColor>();
+                if (targetCharacterColor != null)
+                {
+                    Color targetColor = targetCharacterColor.GetCurrentColor();
+                    HUDColor = targetColor;
+                    UpdateColors();
+                }
             }
             else
             {
                 _activeWeaponController = null;
                 _activeHealth = null;
+                HUDColor = spectatorColor;
+                UpdateColors();
             }
         }
         private void SwitchHUDElements(bool state)
@@ -172,6 +192,28 @@ namespace MachineLearningFPS.UI
             if (_spectatorManager.GetCurrentTarget() != null)
             {
                 HandleActiveTargetChanged(_spectatorManager.GetCurrentTarget());
+            }
+            UpdateColors();
+        }
+
+        private void UpdateColors()
+        {
+            if (HUDColor == null)
+                return;
+
+            foreach (Image image in _hudImages)
+            {
+                image.color = new Color(HUDColor.r, HUDColor.g, HUDColor.b, HUDColorAlpha);
+            }
+
+            foreach (TMP_Text text in _hudTexts)
+            {
+                text.color = new Color(HUDColor.r, HUDColor.g, HUDColor.b, HUDColorAlpha);
+
+            }
+            foreach (Transform child in healthBarParent)
+            {
+                child.gameObject.GetComponent<Image>().color = new Color(HUDColor.r, HUDColor.g, HUDColor.b, HUDColorAlpha);
             }
         }
 

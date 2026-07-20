@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c581d4999a671af4d86c8d688e1ef51b, type: 3}
   m_Name: 1+
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Character.MLCurriculumSettings
-  EnableJumping: 1
-  EnableCrouching: 1
+  EnableJumping: 0
+  EnableCrouching: 0
   EnableVerticalLooking: 0
   EnableWeaponSwapping: 0
   EnableFirstSightReward: 0
@@ -29,6 +29,10 @@ MonoBehaviour:
   AimingQualityRewardScale: 0.5
   EnableWallHitPenalty: 1
   PenaltyForWallHit: -1
+  EnableJumpingPenalty: 0
+  JumpingPenalty: -0.1
+  EnableCrouchingPenalty: 0
+  CrouchingPenalty: -0.1
   EnableExistancePenalty: 1
   ExistancePenaltyAmount: -0.1
   EnableTrucePenalty: 0
@@ -46,3 +50,5 @@ MonoBehaviour:
   ApproachRewardScale: 20
   ApproachRewardMaxDistance: 20
   ApproachRewardMinDistance: 3
+  EnableTriggerReward: 0
+  TriggerRewardAmount: 5
