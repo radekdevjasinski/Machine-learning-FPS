@@ -96,8 +96,6 @@ MonoBehaviour:
   - {fileID: 1166094254945120493, guid: 4a928c6398a47db4681e90dd96e12eed, type: 3}
   _minX: -6
   _maxX: 6
-  _minZ: -10
-  _maxZ: 10
 --- !u!1 &222126808558670438
 GameObject:
   m_ObjectHideFlags: 0
@@ -198,7 +196,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1491cfcb313d0514a984abcd2e4ba236, type: 2}
+  - {fileID: 2100000, guid: b46a47cb1c530a34c87d96ba4355be0a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -627,7 +625,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 5442
+  m_VersionIndex: 5514
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1047,7 +1045,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 6168
+  m_VersionIndex: 6240
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1434,7 +1432,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 7668
+  m_VersionIndex: 7740
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1733,7 +1731,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 12440
+  m_VersionIndex: 12512
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2153,7 +2151,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 5453
+  m_VersionIndex: 5525
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2317,9 +2315,13 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2436769569467232036, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
+      propertyPath: m_Model
+      value: 
+      objectReference: {fileID: 5022602860645237092, guid: 14dba2625f50afd4fb92b4195743b7dc, type: 3}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.39990234
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2430,9 +2432,13 @@ PrefabInstance:
       propertyPath: TeamId
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2436769569467232036, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
+      propertyPath: m_Model
+      value: 
+      objectReference: {fileID: 5022602860645237092, guid: 14dba2625f50afd4fb92b4195743b7dc, type: 3}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.39990234
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.y

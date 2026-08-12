@@ -1131,6 +1131,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleColorScheme",
+                    "type": "Button",
+                    "id": "3d6a5e19-9c2b-4a7e-8f1d-2b6a7c4e9f83",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1340,6 +1349,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "PrevBot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7c1e4f2a-5d8b-46f0-9a3c-1e7d6b2c8a04",
+                    "path": "<Keyboard>/9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleColorScheme",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

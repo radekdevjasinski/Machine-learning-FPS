@@ -15,7 +15,6 @@ namespace MachineLearningFPS.UI
         [SerializeField] private Transform HUDParent;
         [SerializeField] private Color HUDColor;
         [SerializeField] private float HUDColorAlpha;
-        private Color spectatorColor = Color.red;
 
         [Header("Shooting UI")]
         [SerializeField] private Slider shootingCooldownSlider;
@@ -147,21 +146,14 @@ namespace MachineLearningFPS.UI
                 UpdateShootingCooldown(_activeWeaponController != null ? _activeWeaponController.ShootReadinessPercentage : 0f);
                 UpdateMovementState(activeTarget, "Idle");
                 if (_activeHealth != null) UpdateHealthBar(_activeHealth.transform);
-                CharacterColor targetCharacterColor = activeTarget.GetComponentInParent<CharacterColor>();
-                if (targetCharacterColor != null)
-                {
-                    Color targetColor = targetCharacterColor.GetCurrentColor();
-                    HUDColor = targetColor;
-                    UpdateColors();
-                }
             }
             else
             {
                 _activeWeaponController = null;
                 _activeHealth = null;
-                HUDColor = spectatorColor;
-                UpdateColors();
             }
+
+            UpdateColors();
         }
         private void SwitchHUDElements(bool state)
         {

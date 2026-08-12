@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 using MachineLearningFPS.Character;
 
@@ -14,6 +15,14 @@ namespace MachineLearningFPS.Camera
         public UnityEngine.Camera mainCamera;
         public FreeCam freeCam;
 
+        [Header("Per-Player Grade")]
+        public Volume worldVolume;
+        public Light sun;
+        public VolumeProfile playerOneProfile;
+        public VolumeProfile playerTwoProfile;
+        public Color playerOneSunColor = new Color(1f, 0.6f, 0.3f);
+        public Color playerTwoSunColor = new Color(0.55f, 0.7f, 1f);
+
         public List<Transform> targetsHeads = new List<Transform>();
 
         [Header("Input Actions")]
@@ -21,8 +30,11 @@ namespace MachineLearningFPS.Camera
         public InputActionReference nextBotAction;
         public InputActionReference prevBotAction;
 
+        private InputAction toggleColorSchemeAction;
+
         private int currentTargetIndex = -1;
         private bool isFreeCam = true;
+        private bool isPlayerTwoGradeActive = false;
 
         public static event Action<Transform> OnActiveTargetChanged;
 
@@ -37,9 +49,13 @@ namespace MachineLearningFPS.Camera
             nextBotAction.action.Enable();
             prevBotAction.action.Enable();
 
+            toggleColorSchemeAction = nextBotAction.action.actionMap.FindAction("ToggleColorScheme");
+            toggleColorSchemeAction?.Enable();
+
             freeCamToggleAction.action.performed += _ => EnableFreeCam();
             nextBotAction.action.performed += _ => NextTarget();
             prevBotAction.action.performed += _ => PrevTarget();
+            if (toggleColorSchemeAction != null) toggleColorSchemeAction.performed += _ => ToggleColorScheme();
             PerspectiveController.OnCharacterAppear += AddTarget;
             PerspectiveController.OnCharacterDisappear += RemoveTarget;
         }
@@ -49,10 +65,12 @@ namespace MachineLearningFPS.Camera
             freeCamToggleAction.action.Disable();
             nextBotAction.action.Disable();
             prevBotAction.action.Disable();
+            toggleColorSchemeAction?.Disable();
 
             freeCamToggleAction.action.performed -= _ => EnableFreeCam();
             nextBotAction.action.performed -= _ => NextTarget();
             prevBotAction.action.performed -= _ => PrevTarget();
+            if (toggleColorSchemeAction != null) toggleColorSchemeAction.performed -= _ => ToggleColorScheme();
             PerspectiveController.OnCharacterAppear -= AddTarget;
             PerspectiveController.OnCharacterDisappear -= RemoveTarget;
         }
@@ -153,6 +171,8 @@ namespace MachineLearningFPS.Camera
             mainCamera.transform.localPosition = Vector3.zero;
             mainCamera.transform.localRotation = Quaternion.identity;
 
+            ApplyGradeForIndex(currentTargetIndex);
+
             PerspectiveController perspective = head.GetComponentInParent<PerspectiveController>();
             if (perspective != null) perspective.SetHideView();
 
@@ -182,6 +202,31 @@ namespace MachineLearningFPS.Camera
                 UICamera.enabled = false;
             }
         }
+        private void ApplyGradeForIndex(int index)
+        {
+            ApplyGrade(index % 2 == 1);
+        }
+
+        private void ApplyGrade(bool isPlayerTwo)
+        {
+            isPlayerTwoGradeActive = isPlayerTwo;
+
+            if (worldVolume != null)
+            {
+                worldVolume.profile = isPlayerTwo ? playerTwoProfile : playerOneProfile;
+            }
+
+            if (sun != null)
+            {
+                sun.color = isPlayerTwo ? playerTwoSunColor : playerOneSunColor;
+            }
+        }
+
+        public void ToggleColorScheme()
+        {
+            ApplyGrade(!isPlayerTwoGradeActive);
+        }
+
         public Transform GetCurrentTarget()
         {
             if (isFreeCam || currentTargetIndex < 0 || currentTargetIndex >= targetsHeads.Count)

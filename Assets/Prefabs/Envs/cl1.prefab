@@ -94,8 +94,6 @@ MonoBehaviour:
   - {fileID: 6505358705217045460, guid: 45dcf8ea1df13b64ca7ab5068184e7b8, type: 3}
   _minX: -6
   _maxX: 6
-  _minZ: -10
-  _maxZ: 10
 --- !u!1 &222126808558670438
 GameObject:
   m_ObjectHideFlags: 0
@@ -194,7 +192,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1491cfcb313d0514a984abcd2e4ba236, type: 2}
+  - {fileID: 2100000, guid: b46a47cb1c530a34c87d96ba4355be0a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
