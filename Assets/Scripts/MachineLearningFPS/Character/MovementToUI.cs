@@ -36,17 +36,17 @@ namespace MachineLearningFPS.Character
                 switch (newStateHash)
                 {
                     case 0:
-                        OnMovementStateChanged?.Invoke(targetHead, "Jumping");
+                        OnMovementStateChanged?.Invoke(targetHead, "jumping");
                         break;
                     case 1:
-                        OnMovementStateChanged?.Invoke(targetHead, "Crouching");
+                        OnMovementStateChanged?.Invoke(targetHead, "crouching");
                         break;
                     case 2:
-                        OnMovementStateChanged?.Invoke(targetHead, "Walking");
+                        OnMovementStateChanged?.Invoke(targetHead, "walking");
                         break;
                     case 3:
                     default:
-                        OnMovementStateChanged?.Invoke(targetHead, "Idle");
+                        OnMovementStateChanged?.Invoke(targetHead, "idle");
                         break;
 
                 }

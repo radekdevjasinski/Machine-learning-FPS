@@ -364,7 +364,6 @@ MonoBehaviour:
   MaxStep: 0
   _episodeController: {fileID: 0}
   _agentLookSensitivity: 3
-  _teamID: 0
 --- !u!114 &3475944431184084893
 MonoBehaviour:
   m_ObjectHideFlags: 0

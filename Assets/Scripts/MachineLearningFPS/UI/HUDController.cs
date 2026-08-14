@@ -144,7 +144,7 @@ namespace MachineLearningFPS.UI
                 _activeWeaponController = movement.gameObject.GetComponentInChildren<WeaponController>();
                 _activeHealth = activeTarget.GetComponentInParent<Health>();
                 UpdateShootingCooldown(_activeWeaponController != null ? _activeWeaponController.ShootReadinessPercentage : 0f);
-                UpdateMovementState(activeTarget, "Idle");
+                UpdateMovementState(activeTarget, "idle");
                 if (_activeHealth != null) UpdateHealthBar(_activeHealth.transform);
             }
             else
@@ -179,7 +179,7 @@ namespace MachineLearningFPS.UI
             if (_episodeCountText != null)
             {
                 _episodeCount += 1;
-                _episodeCountText.text = $"Episode: {_episodeCount + 1}";
+                _episodeCountText.text = $"episode {_episodeCount + 1}";
             }
             if (_spectatorManager.GetCurrentTarget() != null)
             {

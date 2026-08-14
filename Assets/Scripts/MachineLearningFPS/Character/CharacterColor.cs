@@ -6,6 +6,8 @@ namespace MachineLearningFPS.Character
     {
         [SerializeField] private ModularRobotRandomizer _robotColorScript;
         [SerializeField] private Vector2 _adjustment;
+        [SerializeField] private Material _teamZeroMaterial;
+        [SerializeField] private Material _teamOneMaterial;
 
         void Start()
         {
@@ -17,9 +19,10 @@ namespace MachineLearningFPS.Character
         {
             return AdjustColorForUI(_robotColorScript.GetCurrentColor(_adjustment));
         }
-        public void RandomizeColor()
+
+        public void ApplyTeamColor(int teamId)
         {
-            _robotColorScript.RandomizeMaterialOffsets();
+            _robotColorScript.SetTeamMaterial(teamId == 0 ? _teamZeroMaterial : _teamOneMaterial);
         }
         private Color AdjustColorForUI(Color originalColor)
         {

@@ -1586,7 +1586,7 @@ MonoBehaviour:
   m_Texture: {fileID: 8400000, guid: e12b6e050c1401a4d81bc2082d54af1b, type: 2}
   m_UVRect:
     serializedVersion: 2
-    x: 0
+    x: 0.25
     y: 0
     width: 1
     height: 1
@@ -2268,7 +2268,7 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0

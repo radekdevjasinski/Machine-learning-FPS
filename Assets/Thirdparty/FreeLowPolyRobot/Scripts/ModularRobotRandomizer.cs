@@ -19,9 +19,28 @@ namespace ThirdParty.FreeLowPolyRobot
         [SerializeField] private Texture2D colorAtlasTexture;
         private Vector2 _currentOffset;
 
+        // Cached at Awake, while the original M_AtlasOffset material is still in each slot,
+        // so team-material swaps keep working after the slot no longer matches materialNameToModify by name.
+        private readonly List<(SkinnedMeshRenderer renderer, int slot)> _colorSlots = new List<(SkinnedMeshRenderer, int)>();
+
         private void Awake()
         {
             OrganizeRobotParts();
+            CacheColorSlots();
+        }
+
+        private void CacheColorSlots()
+        {
+            foreach (GameObject part in activeParts)
+            {
+                if (part == null) continue;
+
+                SkinnedMeshRenderer renderer = part.GetComponent<SkinnedMeshRenderer>();
+                if (renderer == null) continue;
+
+                int materialIndex = GetMaterialIndex(renderer);
+                if (materialIndex != -1) _colorSlots.Add((renderer, materialIndex));
+            }
         }
         public Color GetCurrentColor(Vector2 adjustment)
         {
@@ -36,10 +55,6 @@ namespace ThirdParty.FreeLowPolyRobot
             return pixelColor;
         }
 
-        private void Start()
-        {
-            RandomizeMaterialOffsets();
-        }
 
         private void OrganizeRobotParts()
         {
@@ -86,6 +101,21 @@ namespace ThirdParty.FreeLowPolyRobot
                         }
                     }
                 }
+            }
+        }
+
+        // M_AtlasOffset's shader has no exposed color/tint property (colors come purely from
+        // sampling colorAtlasTexture at _UV_Offset), so team coloring swaps in a plain solid-color
+        // material instead of trying to tint a shader that can't be tinted.
+        public void SetTeamMaterial(Material material)
+        {
+            foreach (var (renderer, slot) in _colorSlots)
+            {
+                if (renderer == null) continue;
+
+                Material[] materials = renderer.materials;
+                materials[slot] = material;
+                renderer.materials = materials;
             }
         }
 

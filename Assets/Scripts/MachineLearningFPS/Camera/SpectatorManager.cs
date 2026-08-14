@@ -20,8 +20,10 @@ namespace MachineLearningFPS.Camera
         public Light sun;
         public VolumeProfile playerOneProfile;
         public VolumeProfile playerTwoProfile;
+        public VolumeProfile spectatorProfile;
         public Color playerOneSunColor = new Color(1f, 0.6f, 0.3f);
         public Color playerTwoSunColor = new Color(0.55f, 0.7f, 1f);
+        public Color spectatorSunColor = Color.white;
 
         public List<Transform> targetsHeads = new List<Transform>();
 
@@ -32,9 +34,11 @@ namespace MachineLearningFPS.Camera
 
         private InputAction toggleColorSchemeAction;
 
+        private enum ColorGrade { PlayerOne, PlayerTwo, Spectator }
+
         private int currentTargetIndex = -1;
         private bool isFreeCam = true;
-        private bool isPlayerTwoGradeActive = false;
+        private ColorGrade debugGrade = ColorGrade.PlayerOne;
 
         public static event Action<Transform> OnActiveTargetChanged;
 
@@ -133,6 +137,8 @@ namespace MachineLearningFPS.Camera
                 DeactivateTarget(targetsHeads[currentTargetIndex]);
             }
 
+            ApplySpectatorGrade();
+
             NotifyActiveTargetChanged();
         }
 
@@ -171,7 +177,7 @@ namespace MachineLearningFPS.Camera
             mainCamera.transform.localPosition = Vector3.zero;
             mainCamera.transform.localRotation = Quaternion.identity;
 
-            ApplyGradeForIndex(currentTargetIndex);
+            ApplyGradeForTarget(head);
 
             PerspectiveController perspective = head.GetComponentInParent<PerspectiveController>();
             if (perspective != null) perspective.SetHideView();
@@ -202,29 +208,64 @@ namespace MachineLearningFPS.Camera
                 UICamera.enabled = false;
             }
         }
-        private void ApplyGradeForIndex(int index)
+        // Grade must follow the target's actual team (TeamID, same source CharacterColor uses for
+        // robot material), not its position in targetsHeads — that list's order comes from spawn/
+        // registration order and has no guaranteed relationship to team, which let a blue-team robot
+        // occasionally get the orange grade and vice versa.
+        private void ApplyGradeForTarget(Transform head)
         {
-            ApplyGrade(index % 2 == 1);
+            MLController controller = head.GetComponentInParent<MLController>();
+            int teamId = controller != null ? controller.TeamID : 0;
+
+            // playerOneProfile/playerOneSunColor = orange (team 1), playerTwoProfile/playerTwoSunColor = blue (team 0).
+            ApplyPlayerGrade(teamId == 0);
         }
 
-        private void ApplyGrade(bool isPlayerTwo)
+        private void ApplyPlayerGrade(bool isPlayerTwo)
         {
-            isPlayerTwoGradeActive = isPlayerTwo;
+            SetGrade(isPlayerTwo ? ColorGrade.PlayerTwo : ColorGrade.PlayerOne);
+        }
+
+        private void ApplySpectatorGrade()
+        {
+            SetGrade(ColorGrade.Spectator);
+        }
+
+        private void SetGrade(ColorGrade grade)
+        {
+            debugGrade = grade;
+
+            VolumeProfile profile = playerOneProfile;
+            Color sunColor = playerOneSunColor;
+
+            switch (grade)
+            {
+                case ColorGrade.PlayerTwo:
+                    profile = playerTwoProfile;
+                    sunColor = playerTwoSunColor;
+                    break;
+                case ColorGrade.Spectator:
+                    profile = spectatorProfile;
+                    sunColor = spectatorSunColor;
+                    break;
+            }
 
             if (worldVolume != null)
             {
-                worldVolume.profile = isPlayerTwo ? playerTwoProfile : playerOneProfile;
+                worldVolume.profile = profile;
             }
 
             if (sun != null)
             {
-                sun.color = isPlayerTwo ? playerTwoSunColor : playerOneSunColor;
+                sun.color = sunColor;
             }
         }
 
+        /// Debug-only: cycles through all three grades regardless of the active view (key 9).
         public void ToggleColorScheme()
         {
-            ApplyGrade(!isPlayerTwoGradeActive);
+            ColorGrade nextGrade = (ColorGrade)(((int)debugGrade + 1) % 3);
+            SetGrade(nextGrade);
         }
 
         public Transform GetCurrentTarget()

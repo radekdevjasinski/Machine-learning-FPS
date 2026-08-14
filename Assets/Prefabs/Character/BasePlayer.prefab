@@ -179,6 +179,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterColor
   _robotColorScript: {fileID: 5261772563760879615}
   _adjustment: {x: 0.05, y: -0.05}
+  _teamZeroMaterial: {fileID: 2100000, guid: f3b9e888c1914b4ca0a6ee20dac1e60e, type: 2}
+  _teamOneMaterial: {fileID: 2100000, guid: 484fc54a076c45cda398d34eed5f8627, type: 2}
 --- !u!1 &2009292641244613646
 GameObject:
   m_ObjectHideFlags: 0

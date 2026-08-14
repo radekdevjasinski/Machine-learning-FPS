@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Policies;
 using Unity.MLAgents.Sensors;
 using UnityEngine.InputSystem;
 
@@ -21,7 +22,7 @@ namespace MachineLearningFPS.Character
 
         [Header("Agent Look Settings")]
         [SerializeField] private float _agentLookSensitivity = 1f;
-        [SerializeField] private int _teamID = 0;
+        private int _teamID;
         public int TeamID => _teamID;
 
         [Header("References")]
@@ -31,6 +32,7 @@ namespace MachineLearningFPS.Character
         private WeaponController _weaponController;
         private IInputProvider _inputProvider;
         private MLRewardManager _rewardManager;
+        private BehaviorParameters _behaviorParameters;
         public WeaponController Weapon => _weaponController;
 
         [Header("Actions")]
@@ -57,7 +59,12 @@ namespace MachineLearningFPS.Character
             _inputProvider = GetComponent<IInputProvider>();
             _health = GetComponent<Health>();
             _rewardManager = GetComponent<MLRewardManager>();
+            _behaviorParameters = GetComponent<BehaviorParameters>();
             _weaponController.SetAimTransform(_movementBody.HeadTransform);
+
+            // Single source of truth for team id: ML-Agents self-play already assigns this via
+            // BehaviorParameters, mirroring it here avoids a second hand-set field drifting out of sync.
+            if (_behaviorParameters != null) _teamID = _behaviorParameters.TeamId;
 
             if (_movementBody != null)
             {

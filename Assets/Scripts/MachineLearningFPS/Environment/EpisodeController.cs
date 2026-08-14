@@ -145,7 +145,7 @@ namespace MachineLearningFPS.Environment
             {
                 if (agent.TryGetComponent(out Health health)) health.ResetHealth();
                 if (agent.TryGetComponent(out FPSMovement movement)) movement.ResetMovement();
-                if (agent.TryGetComponent(out CharacterColor color)) color.RandomizeColor();
+                if (agent.TryGetComponent(out CharacterColor color)) color.ApplyTeamColor(agent.TeamID);
             }
 
             if (_arenaController != null)
