@@ -10,6 +10,7 @@ namespace MachineLearningFPS.WeaponSystem
     {
         [SerializeField] private List<Weapon> weapons = new List<Weapon>();
         [SerializeField] private int startingWeaponIndex = 0;
+        [SerializeField] private float _weaponSwitchCooldown = 10f;
         [SerializeField] private float _laserDuration = 0.05f;
         [SerializeField] private float _fadeDuration = 0.01f;
         [SerializeField] private float _laserCastRadius = 0.25f;
@@ -21,6 +22,7 @@ namespace MachineLearningFPS.WeaponSystem
         public int CurrentWeaponIndex => _currentWeaponIndex;
         public float CurrentWeaponRange => _currentWeapon != null && _currentWeapon.Stats != null ? _currentWeapon.Stats.Range : 0f;
         private float _lastFireTime;
+        private float _lastWeaponSwitchTime = -Mathf.Infinity;
         private Transform _aimTransform;
         private RaycastHit[] _hitBuffer = new RaycastHit[32];
         private CharacterController _characterController;
@@ -48,11 +50,18 @@ namespace MachineLearningFPS.WeaponSystem
             _aimTransform = aimTransform;
         }
 
-        public void EquipWeapon(int index)
+        public bool CanSwitchWeapon() => Time.time - _lastWeaponSwitchTime >= _weaponSwitchCooldown;
+
+        public bool EquipWeapon(int index)
         {
             if (index < 0 || index >= weapons.Count || index == _currentWeaponIndex)
             {
-                return;
+                return false;
+            }
+
+            if (!CanSwitchWeapon())
+            {
+                return false;
             }
 
             if (_currentWeapon != null)
@@ -64,6 +73,8 @@ namespace MachineLearningFPS.WeaponSystem
             _currentWeapon = weapons[_currentWeaponIndex];
             _currentWeapon.gameObject.SetActive(true);
             _lastFireTime = Time.time;
+            _lastWeaponSwitchTime = Time.time;
+            return true;
         }
 
         public bool CanShoot()

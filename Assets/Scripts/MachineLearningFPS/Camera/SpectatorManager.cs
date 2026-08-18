@@ -237,6 +237,7 @@ namespace MachineLearningFPS.Camera
 
             VolumeProfile profile = playerOneProfile;
             Color sunColor = playerOneSunColor;
+            bool fogEnabled = true;
 
             switch (grade)
             {
@@ -247,6 +248,7 @@ namespace MachineLearningFPS.Camera
                 case ColorGrade.Spectator:
                     profile = spectatorProfile;
                     sunColor = spectatorSunColor;
+                    fogEnabled = false;
                     break;
             }
 
@@ -259,6 +261,9 @@ namespace MachineLearningFPS.Camera
             {
                 sun.color = sunColor;
             }
+
+            // Fog aids close-range FPS immersion in a bot's POV but occludes the arena overview in free/spectator cam.
+            RenderSettings.fog = fogEnabled;
         }
 
         /// Debug-only: cycles through all three grades regardless of the active view (key 9).

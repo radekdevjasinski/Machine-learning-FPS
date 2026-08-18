@@ -10,6 +10,7 @@ namespace MachineLearningFPS.Environment
         [Header("Episode Settings")]
         [SerializeField] private List<MLController> _agents;
         [SerializeField] private int _maxEpisodeSteps = 1500;
+        public int MaxEpisodeSteps => _maxEpisodeSteps;
         private int _currentEpisodeSteps = 0;
         private bool _timeUp = false;
 
@@ -41,9 +42,16 @@ namespace MachineLearningFPS.Environment
             }
 
             ResetEnvironment();
-            if (_battleRoyaleZone != null)
+            if (_battleRoyaleZone != null && _curriculum.EnableBattleRoyaleZone)
             {
-                _battleRoyaleZone.InitializeZone(healthList, _curriculum.BattleRoyalePenaltyAmount);
+                float episodeDurationSeconds = _maxEpisodeSteps * Time.fixedDeltaTime;
+                float shrinkDuration = _curriculum.ShrinkDurationInEpisodePercent / 100f * episodeDurationSeconds;
+                _battleRoyaleZone.InitializeZone(
+                    healthList,
+                    _curriculum.BattleRoyaleDamageEnabled,
+                    _curriculum.BattleRoyalePenaltyAmount,
+                    shrinkDuration
+                );
             }
         }
 
@@ -159,7 +167,7 @@ namespace MachineLearningFPS.Environment
 
             if (_battleRoyaleZone != null)
             {
-                _battleRoyaleZone.ResetZone();
+                if (_curriculum.EnableBattleRoyaleZone) _battleRoyaleZone.ResetZone();
             }
             else
             {

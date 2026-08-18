@@ -15,11 +15,11 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
   m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
+  m_FogColor: {r: 0, g: 0, b: 0, a: 1}
+  m_FogMode: 1
   m_FogDensity: 0.01
   m_LinearFogStart: 0
-  m_LinearFogEnd: 300
+  m_LinearFogEnd: 70
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
@@ -967,6 +967,10 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 5465
       objectReference: {fileID: 0}
+    - target: {fileID: 2678171121200124929, guid: e1a773230e901f241a0bb14e8d0a5d81, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3205453811435399974, guid: e1a773230e901f241a0bb14e8d0a5d81, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1525,6 +1529,10 @@ PrefabInstance:
     - target: {fileID: 2678412273460131180, guid: f06dd4bfc447abe4ea3946c5442c2c31, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3715853532744874453, guid: f06dd4bfc447abe4ea3946c5442c2c31, type: 3}
+      propertyPath: m_fontStyle
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 5491542154774911130, guid: f06dd4bfc447abe4ea3946c5442c2c31, type: 3}
       propertyPath: m_AnchorMax.y

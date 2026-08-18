@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9795f619e8c7fac4db2bfd08162c9466, type: 3}
   m_Name: Sniper
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.WeaponSystem.WeaponStats
-  damage: 1
+  damage: 2
   range: 500
-  fireRate: 1
-  projectileCount: 2
+  fireRate: 1.5
+  projectileCount: 1
   spread: 0
   recoil: 5

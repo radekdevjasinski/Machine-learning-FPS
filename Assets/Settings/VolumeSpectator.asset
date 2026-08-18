@@ -11,17 +11,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b2db86121404754db890f4c8dfe81b2, type: 3}
   m_Name: Bloom
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   skipIterations:
     m_OverrideState: 1
     m_Value: 0
   threshold:
     m_OverrideState: 1
-    m_Value: 0.65
+    m_Value: 0.8
   intensity:
     m_OverrideState: 1
-    m_Value: 3.2
+    m_Value: 2
   scatter:
     m_OverrideState: 1
     m_Value: 0.65
@@ -61,17 +61,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 899c54efeace73346a0a16faa3afe726, type: 3}
   m_Name: Vignette
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   color:
     m_OverrideState: 1
-    m_Value: {r: 0.04, g: 0.015, b: 0, a: 1}
+    m_Value: {r: 0, g: 0, b: 0, a: 1}
   center:
     m_OverrideState: 0
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.32
+    m_Value: 0.1
   smoothness:
     m_OverrideState: 1
     m_Value: 0.4
@@ -88,7 +88,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985, type: 3}
-  m_Name: SampleSceneProfile
+  m_Name: VolumeSpectator
   m_EditorClassIdentifier: 
   components:
   - {fileID: 849379129802519247}
@@ -110,7 +110,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97c23e3b12dc18c42a140437e53d3951, type: 3}
   m_Name: Tonemapping
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   mode:
     m_OverrideState: 1
@@ -150,23 +150,23 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66f335fb1ffd8684294ad653bf1c7564, type: 3}
   m_Name: ColorAdjustments
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   postExposure:
     m_OverrideState: 1
-    m_Value: -0.2
+    m_Value: 0.4
   contrast:
     m_OverrideState: 1
-    m_Value: 18
+    m_Value: 0
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 1, g: 0.85, b: 0.65, a: 1}
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
   hueShift:
     m_OverrideState: 0
     m_Value: 0
   saturation:
     m_OverrideState: 1
-    m_Value: -8
+    m_Value: 0
 --- !u!114 &1000000000000000002
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -178,17 +178,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70afe9e12c7a7ed47911bb608a23a8ff, type: 3}
   m_Name: SplitToning
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   shadows:
     m_OverrideState: 1
-    m_Value: {r: 0.75, g: 0.4, b: 0.15, a: 1}
+    m_Value: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   highlights:
     m_OverrideState: 1
-    m_Value: {r: 0.9, g: 0.4, b: 0.75, a: 1}
+    m_Value: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   balance:
     m_OverrideState: 1
-    m_Value: -20
+    m_Value: 0
 --- !u!114 &1000000000000000003
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -200,11 +200,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 81180773991d8724ab7f2d216912b564, type: 3}
   m_Name: ChromaticAberration
-  m_EditorClassIdentifier: 
-  active: 1
+  m_EditorClassIdentifier:
+  active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.15
+    m_Value: 0
 --- !u!114 &1000000000000000004
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -216,14 +216,14 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 29fa0085f50d5e54f8144f766051a691, type: 3}
   m_Name: FilmGrain
-  m_EditorClassIdentifier: 
-  active: 1
+  m_EditorClassIdentifier:
+  active: 0
   type:
     m_OverrideState: 1
     m_Value: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.25
+    m_Value: 0
   response:
     m_OverrideState: 0
     m_Value: 0.8
@@ -241,8 +241,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ccf1aba9553839d41ae37dd52e9ebcce, type: 3}
   m_Name: MotionBlur
-  m_EditorClassIdentifier: 
-  active: 1
+  m_EditorClassIdentifier:
+  active: 0
   mode:
     m_OverrideState: 1
     m_Value: 1
@@ -251,7 +251,7 @@ MonoBehaviour:
     m_Value: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.418
+    m_Value: 0
   clamp:
     m_OverrideState: 0
     m_Value: 0.05

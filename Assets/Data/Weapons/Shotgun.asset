@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Shotgun
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.WeaponSystem.WeaponStats
   damage: 1
-  range: 50
+  range: 25
   fireRate: 3
-  projectileCount: 4
-  spread: 10
+  projectileCount: 5
+  spread: 7
   recoil: 5

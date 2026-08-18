@@ -25,10 +25,12 @@ namespace MachineLearningFPS.Environment
         private bool _isActive = false;
         [SerializeField] private List<Health> _agentHealths;
 
-        public void InitializeZone(List<Health> _agentList, float damagePerSecond)
+        public void InitializeZone(List<Health> agentList, bool damageEnabled, float damagePerSecond, float shrinkDuration)
         {
             _damagePerSecond = damagePerSecond;
-            _agentHealths = _agentList;
+            _damageEnabled = damageEnabled;
+            _shrinkDuration = shrinkDuration;
+            _agentHealths = agentList;
             ResetZone();
         }
         public void ResetZone()

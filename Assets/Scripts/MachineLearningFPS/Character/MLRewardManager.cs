@@ -188,8 +188,8 @@ namespace MachineLearningFPS.Character
 
         public void ApplyKingOfTheHillReward(float rewardScale)
         {
-            if (EpisodeController != null)
-                _agent.AddReward(EpisodeController.Curriculum.KingOfTheHillRewardAmount * rewardScale);
+            if (EpisodeController != null && EpisodeController.Curriculum.EnableKingOfTheHillReward)
+                _agent.AddReward(EpisodeController.Curriculum.KingOfTheHillRewardAmount * rewardScale * Time.fixedDeltaTime);
         }
 
         private void HandleAgentShot()
@@ -286,6 +286,12 @@ namespace MachineLearningFPS.Character
             if (EpisodeController != null && EpisodeController.Curriculum.EnableDeathPenalty)
                 _agent.AddReward(EpisodeController.Curriculum.DeathPenaltyAmount);
             _agent.NotifyAgentDied();
+        }
+
+        public void ApplyWeaponChangePenalty()
+        {
+            if (EpisodeController != null && EpisodeController.Curriculum.EnableWeaponChangePenalty)
+                _agent.AddReward(EpisodeController.Curriculum.WeaponChangePenaltyAmount);
         }
 
         public void ApplyTriggerReward(float rewardScale)

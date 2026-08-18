@@ -71,11 +71,24 @@ namespace MachineLearningFPS.Environment
         public float ApproachRewardMaxDistance = 20f;
         public float ApproachRewardMinDistance = 3f;
 
+        [Header("Weapon Swap Penalty")]
+        [Tooltip("Enable a penalty each time the agent switches weapon, to discourage twitchy swapping.")]
+        public bool EnableWeaponChangePenalty = false;
+        public float WeaponChangePenaltyAmount = -0.05f;
+
         [Header("Trigger Rewards")]
         [Tooltip("Enable a reward when the agent enters the green trigger collider. They are placed behind jump and crouch obstacles.")]
         public bool EnableTriggerReward = false;
         public float TriggerRewardAmount = 10f;
+        public bool EnableKingOfTheHillReward = false;
         public float KingOfTheHillRewardAmount = 0.05f;
+
+        [Header("Battle Royale Zone")]
+        [Tooltip("Shrinking zone that pushes agents toward the arena center. Deals damage (or a reward penalty) to agents caught outside the current radius.")]
+        public bool EnableBattleRoyaleZone = false;
+        public bool BattleRoyaleDamageEnabled = false;
+        [Tooltip("Shrink duration as a percentage of the episode's total length (_maxEpisodeSteps), so it scales automatically with episode length instead of a fixed seconds value.")]
+        public float ShrinkDurationInEpisodePercent = 50f;
         public float BattleRoyalePenaltyAmount = 1f;
 
     }

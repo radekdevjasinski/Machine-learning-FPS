@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c581d4999a671af4d86c8d688e1ef51b, type: 3}
+  m_Name: 3
+  m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Character.MLCurriculumSettings
+  EnableJumping: 1
+  EnableCrouching: 1
+  EnableVerticalLooking: 0
+  EnableWeaponSwapping: 1
+  EnableFirstSightReward: 0
+  RewardForFirstSight: 2
+  EnableLookingAtEnemyReward: 0
+  RewardForLookingAtEnemy: 0.5
+  EnableGoodShootReward: 0
+  RewardForGoodShoot: 1.5
+  EnableBadShootPenalty: 1
+  PenaltyForBadShoot: -0.5
+  AimingConeAngle: 15
+  EnableAimingQualityReward: 0
+  AimingQualityRewardScale: 0
+  EnableWallHitPenalty: 1
+  PenaltyForWallHit: -2
+  EnableJumpingPenalty: 1
+  JumpingPenalty: -0.5
+  EnableCrouchingPenalty: 1
+  CrouchingPenalty: -0.25
+  EnableExistancePenalty: 1
+  ExistancePenaltyAmount: -0.01
+  EnableTrucePenalty: 1
+  TrucePenaltyAmount: -10
+  EnableKillReward: 1
+  KillRewardAmount: 20
+  EnableDeathPenalty: 1
+  DeathPenaltyAmount: -8
+  EnableWonByZoneReward: 1
+  WonByZoneRewardAmount: 10
+  DealingDamageRewardScale: 5
+  TakingDamagePenaltyScale: 2
+  EnableContactPenalty: 1
+  ContactPenaltyAmount: -0.5
+  ContactDetectionRadius: 2
+  EnableApproachReward: 0
+  ApproachRewardScale: 20
+  ApproachRewardMaxDistance: 20
+  ApproachRewardMinDistance: 3
+  EnableWeaponChangePenalty: 1
+  WeaponChangePenaltyAmount: -0.5
+  EnableTriggerReward: 1
+  TriggerRewardAmount: 5
+  EnableKingOfTheHillReward: 0
+  KingOfTheHillRewardAmount: 0.03
+  EnableBattleRoyaleZone: 1
+  BattleRoyaleDamageEnabled: 1
+  ShrinkDurationInEpisodePercent: 75
+  BattleRoyalePenaltyAmount: 1

@@ -226,8 +226,10 @@ MonoBehaviour:
   sun: {fileID: 0}
   playerOneProfile: {fileID: 11400000, guid: 10fc4df2da32a41aaa32d77bc913491c, type: 2}
   playerTwoProfile: {fileID: 11400000, guid: eb931128db44adc42b58e372c6b60bab, type: 2}
+  spectatorProfile: {fileID: 11400000, guid: d792c5f7496644da81e1528e648ce017, type: 2}
   playerOneSunColor: {r: 1, g: 0.6, b: 0.3, a: 1}
   playerTwoSunColor: {r: 0.55, g: 0.7, b: 1, a: 1}
+  spectatorSunColor: {r: 1, g: 1, b: 1, a: 1}
   targetsHeads: []
   freeCamToggleAction: {fileID: -3946078459450950481, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   nextBotAction: {fileID: -8494517133217001773, guid: 052faaac586de48259a63d0c4782560b, type: 3}

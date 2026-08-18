@@ -156,7 +156,10 @@ namespace MachineLearningFPS.Character
             {
                 int weaponIndex = actions.DiscreteActions[3] - 1;
                 if (weaponIndex >= 0 && weaponIndex < _weaponController.WeaponCount)
-                    _weaponController.EquipWeapon(weaponIndex);
+                {
+                    if (_weaponController.EquipWeapon(weaponIndex))
+                        _rewardManager?.ApplyWeaponChangePenalty();
+                }
             }
         }
 
@@ -234,7 +237,7 @@ namespace MachineLearningFPS.Character
             if (!_episodeController.Curriculum.EnableCrouching)
                 actionMask.SetActionEnabled(2, 1, false);
 
-            if (!_episodeController.Curriculum.EnableWeaponSwapping)
+            if (!_episodeController.Curriculum.EnableWeaponSwapping || !_weaponController.CanSwitchWeapon())
             {
                 int wc = _weaponController != null ? _weaponController.WeaponCount : 0;
                 for (int i = 1; i <= wc; i++)
