@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4333555751957965189}
   - component: {fileID: 2152356785479365207}
   - component: {fileID: 8032766463058809911}
+  - component: {fileID: 8229711758105806100}
   m_Layer: 0
   m_Name: EpisodeController
   m_TagString: Untagged
@@ -94,6 +95,20 @@ MonoBehaviour:
   - {fileID: 6505358705217045460, guid: 45dcf8ea1df13b64ca7ab5068184e7b8, type: 3}
   _minX: -6
   _maxX: 6
+--- !u!114 &8229711758105806100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126438357070209001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceacf9d7d3dba3f43bf772920fecef0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.HumanVsBotToggle
+  _gameMode: 0
+  _humanControlledAgent: {fileID: 4471536991623866556}
 --- !u!1 &222126808558670438
 GameObject:
   m_ObjectHideFlags: 0
@@ -2302,6 +2317,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe14ff71c947fe2428d436dbc4865dfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Character.MLController
+--- !u!114 &4471536991623866556 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2436769569467232036, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
+  m_PrefabInstance: {fileID: 2296609519579498392}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
 --- !u!1001 &3532217101517408466
 PrefabInstance:
   m_ObjectHideFlags: 0

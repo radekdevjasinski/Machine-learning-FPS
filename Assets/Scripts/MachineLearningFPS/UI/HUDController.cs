@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,8 +26,18 @@ namespace MachineLearningFPS.UI
 
         [Header("Score UI")]
         [SerializeField] private TMP_Text _blueTeamScoreText;
-        [SerializeField] private TMP_Text _redTeamScoreText;
+        [SerializeField] private TMP_Text _orangeTeamScoreText;
         [SerializeField] private TMP_Text _episodeCountText;
+        [SerializeField] private TMP_Text _timerText;
+        [SerializeField] private TMP_Text _messageText;
+
+        [Header("Cooldown UI")]
+        [SerializeField] private GameObject _jumpCooldownGroup;
+        [SerializeField] private TMP_Text _jumpCooldownText;
+        [SerializeField] private GameObject _crouchCooldownGroup;
+        [SerializeField] private TMP_Text _crouchCooldownText;
+        [SerializeField] private GameObject _switchCooldownGroup;
+        [SerializeField] private TMP_Text _switchCooldownText;
 
         [Header("Health UI")]
         [SerializeField] private Transform healthBarParent;
@@ -38,34 +49,57 @@ namespace MachineLearningFPS.UI
         [SerializeField] private TMP_Text[] _hudTexts;
 
 
-        private int _blueTeamScore = 0;
-        private int _redTeamScore = 0;
         private int _episodeCount = 0;
 
 
         private SpectatorManager _spectatorManager;
+        private EpisodeController _episodeController;
         private Health _activeHealth;
+        private FPSMovement _activeMovement;
         private WeaponController _activeWeaponController;
+        private Coroutine _messageCoroutine;
 
         private void OnEnable()
         {
             MovementToUI.OnMovementStateChanged += UpdateMovementState;
             SpectatorManager.OnActiveTargetChanged += HandleActiveTargetChanged;
-            EpisodeController.OnPlayerKilled += AddTeamScore;
             EpisodeController.OnEpisodeReset += EpisodeChange;
             Health.OnHealthChanged += UpdateHealthBar;
+            MatchController.OnStageMessage += ShowMessage;
+            MatchController.OnScoreChanged += UpdateScore;
         }
 
         private void OnDisable()
         {
             MovementToUI.OnMovementStateChanged -= UpdateMovementState;
             SpectatorManager.OnActiveTargetChanged -= HandleActiveTargetChanged;
-            EpisodeController.OnPlayerKilled -= AddTeamScore;
             EpisodeController.OnEpisodeReset -= EpisodeChange;
             Health.OnHealthChanged -= UpdateHealthBar;
+            MatchController.OnStageMessage -= ShowMessage;
+            MatchController.OnScoreChanged -= UpdateScore;
+        }
+
+        private void ShowMessage(string message, float displaySeconds)
+        {
+            if (_messageText == null) return;
+
+            _messageText.text = message;
+            _messageText.gameObject.SetActive(true);
+
+            if (_messageCoroutine != null) StopCoroutine(_messageCoroutine);
+            _messageCoroutine = StartCoroutine(HideMessageAfterDelay(displaySeconds));
+        }
+
+        private IEnumerator HideMessageAfterDelay(float displaySeconds)
+        {
+            yield return new WaitForSeconds(displaySeconds);
+            _messageText.gameObject.SetActive(false);
+            _messageCoroutine = null;
         }
         void Start()
         {
+            _episodeController = FindAnyObjectByType<EpisodeController>();
+
             GameObject spectatorObj = GameObject.FindWithTag("MainCamera");
             if (spectatorObj != null)
             {
@@ -84,6 +118,9 @@ namespace MachineLearningFPS.UI
                 HandleActiveTargetChanged(null);
                 Debug.LogError("MainCamera with SpectatorManager not found in the scene.");
             }
+
+            _episodeCountText.text = $"round {_episodeCount + 1}";
+
         }
         public void UpdateShootingCooldown(float cooldownPercentage)
         {
@@ -94,13 +131,13 @@ namespace MachineLearningFPS.UI
 
             if (shootingCooldownText != null)
             {
-                shootingCooldownText.text = $"{cooldownPercentage * 100:F1}%";
+                shootingCooldownText.text = $"{cooldownPercentage * 100:F0}%";
             }
         }
 
         public void UpdateMovementState(Transform head, string state)
         {
-            if (movementStateText != null && _spectatorManager.GetCurrentTarget() == head)
+            if (movementStateText != null && _spectatorManager != null && _spectatorManager.GetCurrentTarget() == head)
             {
                 movementStateText.text = state;
             }
@@ -131,6 +168,30 @@ namespace MachineLearningFPS.UI
                 UpdateShootingCooldown(_activeWeaponController.ShootReadinessPercentage);
             }
 
+            UpdateTimer();
+
+            UpdateCooldownDisplay(_jumpCooldownGroup, _jumpCooldownText, _activeMovement != null ? _activeMovement.JumpCooldownRemaining : 0f);
+            UpdateCooldownDisplay(_crouchCooldownGroup, _crouchCooldownText, _activeMovement != null ? _activeMovement.CrouchCooldownRemaining : 0f);
+            UpdateCooldownDisplay(_switchCooldownGroup, _switchCooldownText, _activeWeaponController != null ? _activeWeaponController.WeaponSwitchCooldownRemaining : 0f);
+        }
+
+        private void UpdateTimer()
+        {
+            if (_timerText == null || _episodeController == null) return;
+
+            float remaining = _episodeController.TimeRemainingSeconds;
+            int minutes = Mathf.FloorToInt(remaining / 60f);
+            int seconds = Mathf.FloorToInt(remaining % 60f);
+            _timerText.text = $"{minutes}:{seconds:D2}";
+        }
+
+        private void UpdateCooldownDisplay(GameObject group, TMP_Text text, float remainingSeconds)
+        {
+            if (group == null || text == null) return;
+
+            bool onCooldown = remainingSeconds > 0f;
+            group.SetActive(onCooldown);
+            if (onCooldown) text.text = Mathf.Min(Mathf.CeilToInt(remainingSeconds), 9).ToString();
         }
 
         private void HandleActiveTargetChanged(Transform activeTarget)
@@ -140,8 +201,8 @@ namespace MachineLearningFPS.UI
 
             if (hasTarget)
             {
-                FPSMovement movement = activeTarget.GetComponentInParent<FPSMovement>();
-                _activeWeaponController = movement.gameObject.GetComponentInChildren<WeaponController>();
+                _activeMovement = activeTarget.GetComponentInParent<FPSMovement>();
+                _activeWeaponController = _activeMovement.gameObject.GetComponentInChildren<WeaponController>();
                 _activeHealth = activeTarget.GetComponentInParent<Health>();
                 UpdateShootingCooldown(_activeWeaponController != null ? _activeWeaponController.ShootReadinessPercentage : 0f);
                 UpdateMovementState(activeTarget, "idle");
@@ -149,6 +210,7 @@ namespace MachineLearningFPS.UI
             }
             else
             {
+                _activeMovement = null;
                 _activeWeaponController = null;
                 _activeHealth = null;
             }
@@ -160,26 +222,29 @@ namespace MachineLearningFPS.UI
             if (HUDParent == null) return;
             HUDParent.gameObject.SetActive(state);
         }
-        public void AddTeamScore(int teamID)
-        {
-            if (teamID == 0)
-            {
-                _blueTeamScore += 1;
-                if (_blueTeamScoreText != null) _blueTeamScoreText.text = _blueTeamScore.ToString();
-            }
-            else if (teamID == 1)
-            {
-                _redTeamScore += 1;
-                if (_redTeamScoreText != null) _redTeamScoreText.text = _redTeamScore.ToString();
-            }
 
+        public void SetPaused(bool isPaused)
+        {
+            if (isPaused)
+            {
+                SwitchHUDElements(false);
+            }
+            else if (_spectatorManager != null)
+            {
+                HandleActiveTargetChanged(_spectatorManager.GetCurrentTarget());
+            }
+        }
+        public void UpdateScore(int team0Score, int team1Score)
+        {
+            if (_blueTeamScoreText != null) _blueTeamScoreText.text = team0Score.ToString();
+            if (_orangeTeamScoreText != null) _orangeTeamScoreText.text = team1Score.ToString();
         }
         public void EpisodeChange()
         {
             if (_episodeCountText != null)
             {
                 _episodeCount += 1;
-                _episodeCountText.text = $"episode {_episodeCount + 1}";
+                _episodeCountText.text = $"round {_episodeCount + 1}";
             }
             if (_spectatorManager.GetCurrentTarget() != null)
             {

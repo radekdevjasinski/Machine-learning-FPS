@@ -11,6 +11,7 @@ namespace MachineLearningFPS.Environment
         [SerializeField] private List<MLController> _agents;
         [SerializeField] private int _maxEpisodeSteps = 1500;
         public int MaxEpisodeSteps => _maxEpisodeSteps;
+        public float TimeRemainingSeconds => Mathf.Max(0f, (_maxEpisodeSteps - _currentEpisodeSteps) * Time.fixedDeltaTime);
         private int _currentEpisodeSteps = 0;
         private bool _timeUp = false;
 
@@ -24,12 +25,15 @@ namespace MachineLearningFPS.Environment
         [SerializeField] private MLCurriculumSettings _curriculum;
         public MLCurriculumSettings Curriculum => _curriculum;
 
-        public static event Action<int> OnPlayerKilled;
+        private MatchController _matchController;
+
         public static event Action OnEpisodeReset;
         public event Action<float> OnAgentEpisodeEnd;
 
         private void Start()
         {
+            _matchController = FindAnyObjectByType<MatchController>();
+
             List<Health> healthList = new List<Health>();
             foreach (var agent in _agents)
             {
@@ -41,7 +45,7 @@ namespace MachineLearningFPS.Environment
                 }
             }
 
-            ResetEnvironment();
+            _matchController.RunTransition(MatchOutcome.None, ResetEnvironment);
             if (_battleRoyaleZone != null && _curriculum.EnableBattleRoyaleZone)
             {
                 float episodeDurationSeconds = _maxEpisodeSteps * Time.fixedDeltaTime;
@@ -77,18 +81,19 @@ namespace MachineLearningFPS.Environment
             if (_currentEpisodeSteps >= _maxEpisodeSteps)
             {
                 _timeUp = true;
-                ResetEpisode();
+                _matchController.RunTransition(MatchOutcome.Draw, PerformReset);
             }
         }
 
 
         private void HandleAgentDeath(GameObject victim, GameObject killer)
         {
+            MatchOutcome outcome = MatchOutcome.Draw;
+
             if (killer != null && killer.TryGetComponent(out MLController killerML))
             {
                 killerML.ApplyKillReward();
-                int killerTeam = killerML.TeamID;
-                OnPlayerKilled?.Invoke(killerTeam);
+                outcome = killerML.TeamID == 0 ? MatchOutcome.Team0Win : MatchOutcome.Team1Win;
             }
             else if (victim != null)
             {
@@ -97,6 +102,7 @@ namespace MachineLearningFPS.Environment
                     if (otherAgent != null && otherAgent.gameObject != victim)
                     {
                         otherAgent.ApplyWonByZoneReward();
+                        outcome = otherAgent.TeamID == 0 ? MatchOutcome.Team0Win : MatchOutcome.Team1Win;
                     }
                 }
             }
@@ -106,7 +112,7 @@ namespace MachineLearningFPS.Environment
                 victimML.ApplyDeathPenalty();
             }
 
-            ResetEpisode();
+            _matchController.RunTransition(outcome, PerformReset);
         }
 
         private void HandleAgentDamage(GameObject victim, GameObject attacker, float amount)
@@ -126,7 +132,7 @@ namespace MachineLearningFPS.Environment
             }
         }
 
-        private void ResetEpisode()
+        private void PerformReset()
         {
             _currentEpisodeSteps = 0;
 
@@ -154,6 +160,10 @@ namespace MachineLearningFPS.Environment
                 if (agent.TryGetComponent(out Health health)) health.ResetHealth();
                 if (agent.TryGetComponent(out FPSMovement movement)) movement.ResetMovement();
                 if (agent.TryGetComponent(out CharacterColor color)) color.ApplyTeamColor(agent.TeamID);
+                if (agent.TryGetComponent(out MovementToUI movementUI)) movementUI.ResetState();
+                agent.ResetActionState();
+                agent.Weapon?.ResetWeapon();
+                agent.GetComponentInChildren<CharacterVisuals>()?.ResetToIdle();
             }
 
             if (_arenaController != null)

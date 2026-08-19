@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
 using MachineLearningFPS.Character;
+using MachineLearningFPS.Environment;
 
 namespace MachineLearningFPS.Camera
 {
@@ -14,6 +15,7 @@ namespace MachineLearningFPS.Camera
         [Header("Components")]
         public UnityEngine.Camera mainCamera;
         public FreeCam freeCam;
+        [SerializeField] private float _freeCamHeight = 20f;
 
         [Header("Per-Player Grade")]
         public Volume worldVolume;
@@ -33,6 +35,11 @@ namespace MachineLearningFPS.Camera
         public InputActionReference prevBotAction;
 
         private InputAction toggleColorSchemeAction;
+
+        private Action<InputAction.CallbackContext> _onFreeCamToggle;
+        private Action<InputAction.CallbackContext> _onNextBot;
+        private Action<InputAction.CallbackContext> _onPrevBot;
+        private Action<InputAction.CallbackContext> _onToggleColorScheme;
 
         private enum ColorGrade { PlayerOne, PlayerTwo, Spectator }
 
@@ -56,10 +63,15 @@ namespace MachineLearningFPS.Camera
             toggleColorSchemeAction = nextBotAction.action.actionMap.FindAction("ToggleColorScheme");
             toggleColorSchemeAction?.Enable();
 
-            freeCamToggleAction.action.performed += _ => EnableFreeCam();
-            nextBotAction.action.performed += _ => NextTarget();
-            prevBotAction.action.performed += _ => PrevTarget();
-            if (toggleColorSchemeAction != null) toggleColorSchemeAction.performed += _ => ToggleColorScheme();
+            _onFreeCamToggle ??= _ => EnableFreeCam();
+            _onNextBot ??= _ => NextTarget();
+            _onPrevBot ??= _ => PrevTarget();
+            _onToggleColorScheme ??= _ => ToggleColorScheme();
+
+            freeCamToggleAction.action.performed += _onFreeCamToggle;
+            nextBotAction.action.performed += _onNextBot;
+            prevBotAction.action.performed += _onPrevBot;
+            if (toggleColorSchemeAction != null) toggleColorSchemeAction.performed += _onToggleColorScheme;
             PerspectiveController.OnCharacterAppear += AddTarget;
             PerspectiveController.OnCharacterDisappear += RemoveTarget;
         }
@@ -71,10 +83,10 @@ namespace MachineLearningFPS.Camera
             prevBotAction.action.Disable();
             toggleColorSchemeAction?.Disable();
 
-            freeCamToggleAction.action.performed -= _ => EnableFreeCam();
-            nextBotAction.action.performed -= _ => NextTarget();
-            prevBotAction.action.performed -= _ => PrevTarget();
-            if (toggleColorSchemeAction != null) toggleColorSchemeAction.performed -= _ => ToggleColorScheme();
+            freeCamToggleAction.action.performed -= _onFreeCamToggle;
+            nextBotAction.action.performed -= _onNextBot;
+            prevBotAction.action.performed -= _onPrevBot;
+            if (toggleColorSchemeAction != null) toggleColorSchemeAction.performed -= _onToggleColorScheme;
             PerspectiveController.OnCharacterAppear -= AddTarget;
             PerspectiveController.OnCharacterDisappear -= RemoveTarget;
         }
@@ -123,6 +135,18 @@ namespace MachineLearningFPS.Camera
             {
                 AddTarget(target?.Head);
             }
+
+            if (HumanVsBotToggle.ActiveGameMode == GameMode.HumanVsBot && HumanVsBotToggle.HumanHeadTransform != null)
+            {
+                int humanIndex = targetsHeads.IndexOf(HumanVsBotToggle.HumanHeadTransform);
+                if (humanIndex >= 0)
+                {
+                    currentTargetIndex = humanIndex;
+                    isFreeCam = false;
+                    ActivateTarget(targetsHeads[currentTargetIndex]);
+                    NotifyActiveTargetChanged();
+                }
+            }
         }
 
         private void EnableFreeCam()
@@ -130,7 +154,7 @@ namespace MachineLearningFPS.Camera
             isFreeCam = true;
             mainCamera.transform.SetParent(null);
             freeCam.enabled = true;
-            freeCam.SetPosition(new Vector3(0, 10, 0), Quaternion.Euler(75, 0, 0));
+            freeCam.SetPosition(new Vector3(0, _freeCamHeight, 0), Quaternion.Euler(75, 0, 0));
 
             if (currentTargetIndex >= 0 && currentTargetIndex < targetsHeads.Count)
             {
@@ -176,8 +200,6 @@ namespace MachineLearningFPS.Camera
             mainCamera.transform.SetParent(head);
             mainCamera.transform.localPosition = Vector3.zero;
             mainCamera.transform.localRotation = Quaternion.identity;
-
-            ApplyGradeForTarget(head);
 
             PerspectiveController perspective = head.GetComponentInParent<PerspectiveController>();
             if (perspective != null) perspective.SetHideView();

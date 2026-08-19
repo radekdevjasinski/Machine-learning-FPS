@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 
+using MachineLearningFPS.Environment;
+
 namespace MachineLearningFPS.Character
 {
     [RequireComponent(typeof(CharacterController))]
@@ -44,10 +46,12 @@ namespace MachineLearningFPS.Character
         public float MoveSpeed => _moveSpeed;
         public float MaxLookAngle => _maxLookAngle;
         public Transform HeadTransform => _headTransform;
+        public float JumpCooldownRemaining => Mathf.Max(0f, _nextJumpTime - Time.time);
+        public float CrouchCooldownRemaining => Mathf.Max(0f, _nextCrouchTime - Time.time);
 
         private float _nextJumpTime = 0f;
         private float _nextCrouchTime = 0f;
-
+        private float _currentSpeed = 0;
 
         public event Action JumpPerformed;
         public event Action CrouchPerformed;
@@ -56,7 +60,7 @@ namespace MachineLearningFPS.Character
         private bool _wantsToCrouch = false;
         private bool _wasCrouchInput = false;
 
-        void Start()
+        void Awake()
         {
             _controller = GetComponent<CharacterController>();
 
@@ -90,13 +94,21 @@ namespace MachineLearningFPS.Character
             _wantsToCrouch = false;
             _wasCrouchInput = false;
 
+            _controller.height = _standingHeight;
+            _controller.center = new Vector3(0, _standingCenterY, 0);
+            if (_headTransform != null)
+            {
+                Vector3 headPos = _headTransform.localPosition;
+                headPos.y = _standingHeadY;
+                _headTransform.localPosition = headPos;
+            }
+
             _nextJumpTime = 0f;
             _nextCrouchTime = 0f;
         }
 
-        void Update()
+        private void HandleLookingLogic()
         {
-            // --- 1. ROZGLĄDANIE SIĘ ---
             transform.Rotate(Vector3.up * _currentLookInput.x * _lookSpeed);
 
             _xRotation -= _currentLookInput.y * _lookSpeed;
@@ -105,35 +117,9 @@ namespace MachineLearningFPS.Character
 
             _currentLookInput = Vector2.zero;
 
-            // --- 2. KUCANIE (Logika fizyczna) ---
-            if (_currentCrouchInput && !_wasCrouchInput && Time.time >= _nextCrouchTime)
-            {
-                _wantsToCrouch = !_wantsToCrouch;
-                _nextCrouchTime = Time.time + _crouchCooldown;
-                CrouchPerformed?.Invoke();
-            }
-            _wasCrouchInput = _currentCrouchInput;
-
-            bool blocked = !_wantsToCrouch && _isCrouching && !CanStandUp();
-            _isCrouching = _wantsToCrouch || blocked;
-
-            float targetHeight = _isCrouching ? _crouchHeight : _standingHeight;
-            float currentSpeed = _isCrouching ? _moveSpeed * _crouchSpeedMultiplier : _moveSpeed;
-
-            _controller.height = Mathf.Lerp(_controller.height, targetHeight, Time.deltaTime * _crouchTransitionSpeed);
-
-            float heightDifference = _standingHeight - _controller.height;
-            _controller.center = new Vector3(0, _standingCenterY - (heightDifference / 2f), 0);
-
-            if (_headTransform != null)
-            {
-                float targetHeadY = _isCrouching ? _crouchHeadY : _standingHeadY;
-                Vector3 headPos = _headTransform.localPosition;
-                headPos.y = Mathf.Lerp(headPos.y, targetHeadY, Time.deltaTime * _crouchTransitionSpeed);
-                _headTransform.localPosition = headPos;
-            }
-
-            // --- 3. SKAKANIE I GRAWITACJA ---
+        }
+        private void HandleJumpingLogic()
+        {
             if (_controller.isGrounded && _velocity.y < 0)
             {
                 _velocity.y = -2f;
@@ -147,8 +133,38 @@ namespace MachineLearningFPS.Character
             }
 
             _currentJumpInput = false;
+        }
+        private void HandleCrouchingLogic()
+        {
+            if (_currentCrouchInput && !_wasCrouchInput && Time.time >= _nextCrouchTime)
+            {
+                _wantsToCrouch = !_wantsToCrouch;
+                _nextCrouchTime = Time.time + _crouchCooldown;
+                CrouchPerformed?.Invoke();
+            }
+            _wasCrouchInput = _currentCrouchInput;
 
-            // --- 4. PORUSZANIE SIĘ ---
+            bool blocked = !_wantsToCrouch && _isCrouching && !CanStandUp();
+            _isCrouching = _wantsToCrouch || blocked;
+
+            float targetHeight = _isCrouching ? _crouchHeight : _standingHeight;
+            _currentSpeed = _isCrouching ? _moveSpeed * _crouchSpeedMultiplier : _moveSpeed;
+
+            _controller.height = Mathf.Lerp(_controller.height, targetHeight, Time.deltaTime * _crouchTransitionSpeed);
+
+            float heightDifference = _standingHeight - _controller.height;
+            _controller.center = new Vector3(0, _standingCenterY - (heightDifference / 2f), 0);
+
+            if (_headTransform != null)
+            {
+                float targetHeadY = _isCrouching ? _crouchHeadY : _standingHeadY;
+                Vector3 headPos = _headTransform.localPosition;
+                headPos.y = Mathf.Lerp(headPos.y, targetHeadY, Time.deltaTime * _crouchTransitionSpeed);
+                _headTransform.localPosition = headPos;
+            }
+        }
+        private void HandleMovementLogic()
+        {
             float adjustedInputX = _currentMoveInput.x * _strafeSpeedMultiplier;
             float adjustedInputY = _currentMoveInput.y < 0 ? _currentMoveInput.y * _backwardSpeedMultiplier : _currentMoveInput.y;
 
@@ -161,9 +177,18 @@ namespace MachineLearningFPS.Character
 
             _velocity.y += GRAVITY * Time.deltaTime;
 
-            Vector3 finalMovement = (moveDirection * currentSpeed) + _velocity;
+            Vector3 finalMovement = (moveDirection * _currentSpeed) + _velocity;
 
             _controller.Move(finalMovement * Time.deltaTime);
+        }
+        void Update()
+        {
+            if (MatchController.InputBlocked || Time.timeScale == 0f) return;
+
+            HandleLookingLogic();
+            HandleCrouchingLogic();
+            HandleJumpingLogic();
+            HandleMovementLogic();
         }
         private bool CanStandUp()
         {

@@ -27,7 +27,7 @@ namespace MachineLearningFPS.UI
             if (label == null) return;
 
             bool isSelected = EventSystem.current != null && EventSystem.current.currentSelectedGameObject == gameObject;
-            bool showCursor = pointerOver && !isSelected;
+            bool showCursor = pointerOver || isSelected;
 
             if (!showCursor)
             {
@@ -59,5 +59,7 @@ namespace MachineLearningFPS.UI
         public void OnPointerExit(PointerEventData eventData) => pointerOver = false;
         public void OnSelect(BaseEventData eventData) { }
         public void OnDeselect(BaseEventData eventData) { }
+
+        public void ResetCache() => showingCursor = false;
     }
 }

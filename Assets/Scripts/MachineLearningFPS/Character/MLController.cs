@@ -125,6 +125,8 @@ namespace MachineLearningFPS.Character
 
         public override void OnActionReceived(ActionBuffers actions)
         {
+            if (MatchController.InputBlocked) return;
+
             float moveX = actions.ContinuousActions[0];
             float moveZ = actions.ContinuousActions[1];
             float lookX = actions.ContinuousActions[2];
@@ -243,6 +245,14 @@ namespace MachineLearningFPS.Character
                 for (int i = 1; i <= wc; i++)
                     actionMask.SetActionEnabled(3, i, false);
             }
+        }
+
+        public void ResetActionState()
+        {
+            _currentAgentMoveInput = Vector2.zero;
+            _targetAgentLookInput = Vector2.zero;
+            _currentAgentJump = false;
+            _currentAgentCrouch = false;
         }
 
         public void ApplyKillReward() => _rewardManager?.ApplyKillReward();

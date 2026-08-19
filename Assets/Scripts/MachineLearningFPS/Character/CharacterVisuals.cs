@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
+using MachineLearningFPS.Environment;
 
 namespace MachineLearningFPS.Character
 {
@@ -23,13 +24,18 @@ namespace MachineLearningFPS.Character
         [SerializeField] private float _legsRigMaxWeight = 0.8f;
 
         private Animator animator;
+        private Health _health;
         private bool wasGrounded;
         private float _defaultLocalY;
 
-        void Start()
+        void Awake()
         {
             animator = GetComponent<Animator>();
+            _health = GetComponentInParent<Health>();
+        }
 
+        void Start()
+        {
             if (controller != null)
             {
                 wasGrounded = controller.isGrounded;
@@ -38,17 +44,52 @@ namespace MachineLearningFPS.Character
             _defaultLocalY = transform.localPosition.y;
         }
 
+        private void OnEnable()
+        {
+            if (_health != null) _health.OnDeath += HandleDeath;
+        }
+
+        private void OnDisable()
+        {
+            if (_health != null) _health.OnDeath -= HandleDeath;
+        }
+
+        private void HandleDeath(GameObject victim, GameObject killer)
+        {
+            if (animator != null) animator.SetTrigger("IsDead");
+        }
+
+        public void ResetToIdle()
+        {
+            if (animator == null) return;
+
+            animator.Rebind();
+            animator.SetFloat("Speed", 0f);
+            animator.SetFloat("VerticalSpeed", 0f);
+            animator.SetBool("IsGrounded", true);
+            animator.Update(0f);
+
+            if (controller != null) wasGrounded = controller.isGrounded;
+        }
+
         void Update()
         {
             if (controller == null) return;
+            if (MatchController.InputBlocked || Time.timeScale == 0f) return;
 
-            // speed
+            VisualizeSpeed();
+            VisualizeJump();
+            VisualizeCrouch();
+        }
+        void VisualizeSpeed()
+        {
             Vector3 horizontalVelocity = new Vector3(controller.velocity.x, 0f, controller.velocity.z);
             float currentSpeed = horizontalVelocity.magnitude;
             animator.SetFloat("Speed", currentSpeed, 0.05f, Time.deltaTime);
             animator.SetFloat("VerticalSpeed", controller.velocity.y);
-
-            // jump
+        }
+        void VisualizeJump()
+        {
             bool isGrounded = controller.isGrounded;
             animator.SetBool("IsGrounded", isGrounded);
 
@@ -61,9 +102,9 @@ namespace MachineLearningFPS.Character
                 animator.SetTrigger("JumpEnd");
             }
             wasGrounded = isGrounded;
-
-            // crouch
-
+        }
+        void VisualizeCrouch()
+        {
             bool isCrouching = controller.height <= _heightToCrouchThreshold;
             float targetY = isCrouching ? _defaultLocalY + _crouchYOffset : _defaultLocalY;
 
@@ -89,7 +130,6 @@ namespace MachineLearningFPS.Character
                 float targetLegsRigWeight = isCrouching ? _legsRigMaxWeight : 0f;
                 _legsRig.weight = Mathf.Lerp(_legsRig.weight, targetLegsRigWeight, Time.deltaTime * _hunchTransitionSpeed);
             }
-
         }
     }
 }

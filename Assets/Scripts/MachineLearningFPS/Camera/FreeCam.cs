@@ -18,6 +18,8 @@ namespace MachineLearningFPS.Camera
 
         void Update()
         {
+            if (Time.timeScale == 0f) return;
+
             // rotation
             Vector2 lookInput = lookAction.action.ReadValue<Vector2>();
             rotationX -= lookInput.y * lookSensitivity;

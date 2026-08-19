@@ -51,6 +51,18 @@ namespace MachineLearningFPS.WeaponSystem
         }
 
         public bool CanSwitchWeapon() => Time.time - _lastWeaponSwitchTime >= _weaponSwitchCooldown;
+        public float WeaponSwitchCooldownRemaining => Mathf.Max(0f, _weaponSwitchCooldown - (Time.time - _lastWeaponSwitchTime));
+
+        public void ResetWeapon()
+        {
+            if (_currentWeapon != null) _currentWeapon.gameObject.SetActive(false);
+            _currentWeaponIndex = -1;
+            _currentWeapon = null;
+            _lastFireTime = 0f;
+            _lastWeaponSwitchTime = -Mathf.Infinity;
+
+            if (weapons.Count > 0) EquipWeapon(startingWeaponIndex);
+        }
 
         public bool EquipWeapon(int index)
         {

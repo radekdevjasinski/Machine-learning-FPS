@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+using MachineLearningFPS.Environment;
+
 namespace MachineLearningFPS.Character
 {
     public class MovementToUI : MonoBehaviour
@@ -13,7 +15,14 @@ namespace MachineLearningFPS.Character
 
         public static event Action<Transform, string> OnMovementStateChanged;
 
+        private Health _health;
+        private bool _isDead;
         private int _lastStateHash = -1;
+
+        private void Awake()
+        {
+            _health = GetComponent<Health>();
+        }
 
         private void OnEnable()
         {
@@ -21,11 +30,31 @@ namespace MachineLearningFPS.Character
             {
                 characterController = GetComponent<CharacterController>();
             }
+
+            if (_health != null) _health.OnDeath += HandleDeath;
+        }
+
+        private void OnDisable()
+        {
+            if (_health != null) _health.OnDeath -= HandleDeath;
+        }
+
+        private void HandleDeath(GameObject victim, GameObject killer)
+        {
+            _isDead = true;
+        }
+
+        public void ResetState()
+        {
+            _isDead = false;
+            _lastStateHash = 3;
+            OnMovementStateChanged?.Invoke(targetHead, "idle");
         }
 
         private void Update()
         {
             if (characterController == null) return;
+            if (MatchController.InputBlocked || Time.timeScale == 0f) return;
 
             int newStateHash = GetCurrentStateHash();
 
@@ -44,6 +73,9 @@ namespace MachineLearningFPS.Character
                     case 2:
                         OnMovementStateChanged?.Invoke(targetHead, "walking");
                         break;
+                    case 4:
+                        OnMovementStateChanged?.Invoke(targetHead, "dead");
+                        break;
                     case 3:
                     default:
                         OnMovementStateChanged?.Invoke(targetHead, "idle");
@@ -55,6 +87,11 @@ namespace MachineLearningFPS.Character
 
         private int GetCurrentStateHash()
         {
+            if (_isDead)
+            {
+                return 4;
+            }
+
             if (!characterController.isGrounded)
             {
                 return 0;
