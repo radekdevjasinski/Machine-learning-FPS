@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace MachineLearningFPS.Environment
+namespace MachineLearningFPS.MachineLearning
 {
     [CreateAssetMenu(fileName = "NewCurriculumSettings", menuName = "ML-Agents/Curriculum Settings")]
     public class MLCurriculumSettings : ScriptableObject
@@ -22,8 +22,8 @@ namespace MachineLearningFPS.Environment
         public float RewardForGoodShoot = 0.5f;
         public bool EnableBadShootPenalty = false;
         public float PenaltyForBadShoot = -0.1f;
-        public float AimingConeAngle = 5f;
         public bool EnableAimingQualityReward = false;
+        public float AimingConeAngle = 5f;
         public float AimingQualityRewardScale = 0.15f;
 
         [Header("Movement Rewards (per second)")]

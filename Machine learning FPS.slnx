@@ -1,4 +1,8 @@
 ﻿<Solution>
+  <Project Path="MachineLearningFPS.csproj" />
+  <Project Path="MachineLearningFPS.EditModeTests.csproj" />
+  <Project Path="ThirdParty.FreeLowPolyRobot.csproj" />
+  <Project Path="MachineLearningFPS.PlayModeTests.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
 </Solution>

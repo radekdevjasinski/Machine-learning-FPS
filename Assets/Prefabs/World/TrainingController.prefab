@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8009401507285791611
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3728019946515896317}
+  - component: {fileID: 7257475249536612367}
+  - component: {fileID: 8181119918617875851}
+  m_Layer: 0
+  m_Name: TrainingController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3728019946515896317
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8009401507285791611}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7257475249536612367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8009401507285791611}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f59e019205a3e94f976ac0c3b6a6ef4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.TrainingController
+  _logInterval: 30
+--- !u!114 &8181119918617875851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8009401507285791611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9f3ce2755aa9b4fab1fa43e79dfc02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.UI.TimeScaleController
+  _timeScale: 1
+  _speedUpAction: {fileID: -6076328035418416345, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  _slowDownAction: {fileID: 1953919590162355094, guid: 052faaac586de48259a63d0c4782560b, type: 3}

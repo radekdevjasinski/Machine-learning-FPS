@@ -1140,6 +1140,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "SpeedUpTimeScale",
+                    "type": "Button",
+                    "id": "a1b2c3d4-2f6e-4a2b-9c3d-4e5f6a7b8c9d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SlowDownTimeScale",
+                    "type": "Button",
+                    "id": "b2c3d4e5-3a7f-4b3c-8d4e-5f6a7b8c9d0e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1360,6 +1378,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "ToggleColorScheme",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c3d4e5f6-4b8a-4c4d-9e5f-6a7b8c9d0e1f",
+                    "path": "<Keyboard>/period",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SpeedUpTimeScale",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d4e5f6a7-5c9b-4d5e-8f6a-7b8c9d0e1f2a",
+                    "path": "<Keyboard>/comma",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SlowDownTimeScale",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

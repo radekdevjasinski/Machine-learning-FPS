@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using MachineLearningFPS.Character;
+using MachineLearningFPS.MachineLearning;
 
 namespace MachineLearningFPS.Environment
 {

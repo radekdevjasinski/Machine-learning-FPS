@@ -62,6 +62,8 @@ namespace MachineLearningFPS.WeaponSystem
             _lastWeaponSwitchTime = -Mathf.Infinity;
 
             if (weapons.Count > 0) EquipWeapon(startingWeaponIndex);
+
+            _lastWeaponSwitchTime = -Mathf.Infinity;
         }
 
         public bool EquipWeapon(int index)

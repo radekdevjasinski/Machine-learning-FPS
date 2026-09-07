@@ -1,0 +1,22 @@
+{
+    "name": "MachineLearningFPS",
+    "rootNamespace": "",
+    "references": [
+        "Unity.InputSystem",
+        "Unity.ML-Agents",
+        "Unity.TextMeshPro",
+        "Unity.Animation.Rigging",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "ThirdParty.FreeLowPolyRobot"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

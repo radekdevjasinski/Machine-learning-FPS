@@ -1,9 +1,10 @@
 using System;
+using MachineLearningFPS.Character;
 using MachineLearningFPS.UI;
 using Unity.MLAgents;
 using UnityEngine;
 
-namespace MachineLearningFPS.Character
+namespace MachineLearningFPS.MachineLearning
 {
     [RequireComponent(typeof(MLController), typeof(CharacterController))]
     public class MLEpisodeTelemetry : MonoBehaviour

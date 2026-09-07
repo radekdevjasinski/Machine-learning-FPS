@@ -5,13 +5,14 @@ using Unity.MLAgents.Policies;
 using Unity.MLAgents.Sensors;
 using UnityEngine.InputSystem;
 
+using MachineLearningFPS.Character;
 using MachineLearningFPS.WeaponSystem;
 using MachineLearningFPS.Environment;
 using System.Collections.Generic;
 using System;
 using System.Collections;
 
-namespace MachineLearningFPS.Character
+namespace MachineLearningFPS.MachineLearning
 {
     [RequireComponent(typeof(FPSMovement))]
     public class MLController : Agent

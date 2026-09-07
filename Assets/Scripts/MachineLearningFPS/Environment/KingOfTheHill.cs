@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents;
-using MachineLearningFPS.Character;
+using MachineLearningFPS.MachineLearning;
 
 public class KingOfTheHillZone : MonoBehaviour
 {

@@ -1,6 +1,6 @@
 using UnityEngine;
 using Unity.MLAgents;
-using MachineLearningFPS.Character;
+using MachineLearningFPS.MachineLearning;
 
 namespace MachineLearningFPS.Environment
 {

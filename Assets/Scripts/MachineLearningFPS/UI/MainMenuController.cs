@@ -10,6 +10,9 @@ namespace MachineLearningFPS.UI
 
         private void Awake()
         {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
             navigator = GetComponentInParent<MainMenuNavigator>();
 
             FindButton("Play").onClick.AddListener(navigator.ShowLevelList);

@@ -14,12 +14,12 @@ namespace MachineLearningFPS.UI
         private static readonly Color CpuVsCpuColor = new Color(0.15f, 1f, 0.15f, 0.6862745f);
         private static readonly Color HumanVsCpuColor = new Color(1f, 0.15f, 0.15f, 0.6862745f);
 
-        [SerializeField]
         private List<SceneMenuEntry> scenes = new()
         {
-            new SceneMenuEntry { displayName = "CL1", sceneName = "cl1" },
-            new SceneMenuEntry { displayName = "CL2", sceneName = "cl2" },
-            new SceneMenuEntry { displayName = "CL3", sceneName = "cl3" },
+            new SceneMenuEntry { displayName = "lesson1", sceneName = "cl1" },
+            new SceneMenuEntry { displayName = "lesson2", sceneName = "cl2" },
+            new SceneMenuEntry { displayName = "lesson3", sceneName = "cl3" },
+            new SceneMenuEntry { displayName = "test", sceneName = "final" },
         };
 
         private MainMenuNavigator navigator;

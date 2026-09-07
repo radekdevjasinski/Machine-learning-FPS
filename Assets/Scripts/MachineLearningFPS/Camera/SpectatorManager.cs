@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 
 using MachineLearningFPS.Character;
 using MachineLearningFPS.Environment;
+using MachineLearningFPS.MachineLearning;
 
 namespace MachineLearningFPS.Camera
 {

@@ -126,6 +126,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MachineLearningFPS.Environment.MatchController
   _prepareSeconds: 2
   _roundEndSeconds: 2
+  _roundsToWin: 5
+  _matchEndDelaySeconds: 5
+  _mainMenuSceneName: main menu
 --- !u!1 &222126808558670438
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,7 +278,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 399222112301734018}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -2512,7 +2515,7 @@ PrefabInstance:
       objectReference: {fileID: 5022602860645237092, guid: d2439a19eadc2e241bdc66615761f36b, type: 3}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.4
+      value: 0.40014648
       objectReference: {fileID: 0}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2640,7 +2643,7 @@ PrefabInstance:
       objectReference: {fileID: 5022602860645237092, guid: d2439a19eadc2e241bdc66615761f36b, type: 3}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.4
+      value: 0.40014648
       objectReference: {fileID: 0}
     - target: {fileID: 4511109873050638546, guid: fa39e02e9d449b343ab3e2f70a6605f8, type: 3}
       propertyPath: m_LocalPosition.y

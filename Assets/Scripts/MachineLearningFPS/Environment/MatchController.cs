@@ -34,6 +34,9 @@ namespace MachineLearningFPS.Environment
         public static bool InputBlocked { get; private set; }
         public static event Action<string, float> OnStageMessage;
         public static event Action<int, int> OnScoreChanged;
+        public static event Action<MatchOutcome> OnRoundConcluded;
+        public static event Action<MatchOutcome> OnMatchConcluded;
+        public int RoundsToWin => _roundsToWin;
         public MatchStage CurrentStage { get; private set; } = MatchStage.Prepare;
         public int Team0Score { get; private set; }
         public int Team1Score { get; private set; }
@@ -53,6 +56,7 @@ namespace MachineLearningFPS.Environment
             {
                 CurrentStage = MatchStage.RoundEnd;
                 ApplyScore(outcome);
+                OnRoundConcluded?.Invoke(outcome);
                 LogStage(BuildOutcomeText(outcome), _roundEndSeconds);
                 yield return new WaitForSeconds(_roundEndSeconds);
 
@@ -81,6 +85,7 @@ namespace MachineLearningFPS.Environment
         private IEnumerator EndMatch(MatchOutcome winner)
         {
             CurrentStage = MatchStage.Ending;
+            OnMatchConcluded?.Invoke(winner);
             LogStage(BuildMatchEndText(winner), _matchEndDelaySeconds);
             yield return new WaitForSeconds(_matchEndDelaySeconds);
 

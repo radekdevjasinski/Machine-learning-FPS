@@ -10,10 +10,10 @@ namespace MachineLearningFPS.UI
         private float pulseMinAlpha = 0f;
 
         private static readonly Color CursorColor = new Color(0.15f, 1f, 0.15f);
+        private static MenuButtonCursor hoveredButton;
 
         private TMP_Text label;
         private string baseText;
-        private bool pointerOver;
         private bool showingCursor;
         private float phase;
 
@@ -22,12 +22,18 @@ namespace MachineLearningFPS.UI
             label = GetComponentInChildren<TMP_Text>();
         }
 
+        private void OnDisable()
+        {
+            if (hoveredButton == this) hoveredButton = null;
+        }
+
         private void Update()
         {
             if (label == null) return;
 
             bool isSelected = EventSystem.current != null && EventSystem.current.currentSelectedGameObject == gameObject;
-            bool showCursor = pointerOver || isSelected;
+            bool isHovered = hoveredButton == this;
+            bool showCursor = isHovered || (isSelected && hoveredButton == null);
 
             if (!showCursor)
             {
@@ -55,8 +61,11 @@ namespace MachineLearningFPS.UI
             label.text = $"{baseText}<color=#{hex}>|</color>";
         }
 
-        public void OnPointerEnter(PointerEventData eventData) => pointerOver = true;
-        public void OnPointerExit(PointerEventData eventData) => pointerOver = false;
+        public void OnPointerEnter(PointerEventData eventData) => hoveredButton = this;
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (hoveredButton == this) hoveredButton = null;
+        }
         public void OnSelect(BaseEventData eventData) { }
         public void OnDeselect(BaseEventData eventData) { }
 

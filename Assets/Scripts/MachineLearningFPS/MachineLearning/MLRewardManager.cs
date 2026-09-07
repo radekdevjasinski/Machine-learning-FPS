@@ -1,10 +1,11 @@
 using UnityEngine;
 using Unity.MLAgents.Sensors;
+using MachineLearningFPS.Character;
 using MachineLearningFPS.Environment;
 using MachineLearningFPS.WeaponSystem;
 using System.Collections;
 
-namespace MachineLearningFPS.Character
+namespace MachineLearningFPS.MachineLearning
 {
     [RequireComponent(typeof(MLController), typeof(FPSMovement), typeof(CharacterController))]
     public class MLRewardManager : MonoBehaviour
@@ -21,6 +22,9 @@ namespace MachineLearningFPS.Character
         private EpisodeController EpisodeController => _agent.ActiveEpisodeController;
 
         private bool _firstSightRewardGiven = false;
+        private bool _hasSeenEnemyThisEpisode = false;
+
+        public event System.Action OnEnemyFirstSighted;
 
         private int _jumpSafeZoneCount = 0;
         private int _crouchSafeZoneCount = 0;
@@ -57,6 +61,7 @@ namespace MachineLearningFPS.Character
         private void ResetPerception()
         {
             _firstSightRewardGiven = false;
+            _hasSeenEnemyThisEpisode = false;
             LastKnownEnemyLocalDir = Vector3.zero;
             TimeSinceEnemySeen = 999f;
 
@@ -99,6 +104,12 @@ namespace MachineLearningFPS.Character
             {
                 LastKnownEnemyLocalDir = transform.InverseTransformDirection(enemyWorldDir);
                 TimeSinceEnemySeen = 0f;
+
+                if (!_hasSeenEnemyThisEpisode)
+                {
+                    _hasSeenEnemyThisEpisode = true;
+                    OnEnemyFirstSighted?.Invoke();
+                }
             }
             else
             {
@@ -143,22 +154,40 @@ namespace MachineLearningFPS.Character
                 if (col.gameObject == gameObject) continue;
 
                 float distance = Vector3.Distance(transform.position, col.transform.position);
+                float approachReward = CalculateApproachReward(
+                    distance,
+                    EpisodeController.Curriculum.ApproachRewardMinDistance,
+                    EpisodeController.Curriculum.ApproachRewardMaxDistance,
+                    EpisodeController.Curriculum.ApproachRewardScale);
 
-                if (distance > EpisodeController.Curriculum.ApproachRewardMinDistance && distance < EpisodeController.Curriculum.ApproachRewardMaxDistance)
-                {
-                    float normalizedDistance = 1f - (distance / EpisodeController.Curriculum.ApproachRewardMaxDistance);
-                    float approachReward = normalizedDistance * EpisodeController.Curriculum.ApproachRewardScale * 0.001f;
+                if (approachReward != 0f)
                     _agent.AddReward(approachReward * Time.deltaTime);
-                }
                 break;
             }
         }
 
         private void ApplyAimingReward(float aimQualityDot)
         {
-            float coneEdge = Mathf.Cos(EpisodeController.Curriculum.AimingConeAngle * Mathf.Deg2Rad);
+            float aimingReward = CalculateAimingReward(
+                aimQualityDot,
+                EpisodeController.Curriculum.AimingConeAngle,
+                EpisodeController.Curriculum.AimingQualityRewardScale);
+            _agent.AddReward(aimingReward * Time.deltaTime);
+        }
+
+        public static float CalculateApproachReward(float distance, float minDistance, float maxDistance, float rewardScale)
+        {
+            if (distance <= minDistance || distance >= maxDistance) return 0f;
+
+            float normalizedDistance = 1f - (distance / maxDistance);
+            return normalizedDistance * rewardScale * 0.001f;
+        }
+
+        public static float CalculateAimingReward(float aimQualityDot, float coneAngleDegrees, float rewardScale)
+        {
+            float coneEdge = Mathf.Cos(coneAngleDegrees * Mathf.Deg2Rad);
             float aimQuality = Mathf.InverseLerp(coneEdge, 1f, aimQualityDot);
-            _agent.AddReward(aimQuality * EpisodeController.Curriculum.AimingQualityRewardScale * Time.deltaTime);
+            return aimQuality * rewardScale;
         }
 
         private void ApplyContinuousRewards()
