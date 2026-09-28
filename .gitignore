@@ -10,7 +10,12 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
-/ml-agents
+/ml-agents/*
+!/ml-agents/config/
+/ml-agents/config/*
+!/ml-agents/config/cl1.yaml
+!/ml-agents/config/cl2.yaml
+!/ml-agents/config/cl3.yaml
 *.log
 
 # MemoryCaptures can get excessive in size.
